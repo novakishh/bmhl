@@ -1,11 +1,31 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <!-- Instantly redirects browser to your Apps Script Web App -->
-    <meta http-equiv="refresh" content="0; url=https://script.google.com/macros/s/AKfycbyIOR9a1TsTk-NsxccwZdgNxmOPu_w7YWge9aEovUxCFXzWif3xsDQuLfT1DDbklQVm8g/exec">
-    <script>window.location.href = "https://script.google.com/macros/s/AKfycbyIOR9a1TsTk-NsxccwZdgNxmOPu_w7YWge9aEovUxCFXzWif3xsDQuLfT1DDbklQVm8g/exec";</script>
-  </head>
-  <body>
-    <p>Loading BMHL...</p>
-  </body>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BMHL - Banh Mi Hockey League</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden; /* Prevents double scrollbars */
+      background-color: #0f172a; /* Dark background while loading */
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <iframe 
+    src="https://script.google.com/macros/s/AKfycbyIOR9a1TsTk-NsxccwZdgNxmOPu_w7YWge9aEovUxCFXzWif3xsDQuLfT1DDbklQVm8g/exec" 
+    allow="geolocation; microphone; camera"
+    sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts">
+  </iframe>
+</body>
 </html>
