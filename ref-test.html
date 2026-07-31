@@ -396,11 +396,20 @@
             totalSeconds--;
             updateTimerDisplay();
           } else {
+            // --- TIMER HITS 00:00 ---
             clearInterval(timerInterval);
             isRunning = false;
+            
+            // 1. Unlock the UI
             btn.innerText = "START";
             btn.style.backgroundColor = "#28a745";
             setupBtns.forEach(el => el.style.opacity = "1"); 
+            
+            // 2. Automatically advance to the next period
+            changePeriod(1);
+            
+            // 3. Automatically reset the clock to 20:00 for the next period
+            resetTimer();
           }
         }, 1000);
       }
