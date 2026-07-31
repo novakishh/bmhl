@@ -518,6 +518,7 @@
         goalEvents.push(newGoal);
         pendingSyncGoals.push(newGoal);
 
+        // Waits 30 seconds before silently sending to Google Sheets
         setTimeout(() => {
           triggerSilentSync(newGoal.id);
         }, 30000); 
