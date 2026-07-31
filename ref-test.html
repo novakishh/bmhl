@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  
+  <title>BMHL - Banh Mi Hockey League</title>
+
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://novakishh.github.io/bmhl/">
+  <meta property="og:title" content="BMHL - Banh Mi Hockey League">
+  <meta property="og:description" content="Stats, standings, and game recaps for the BMHL. It's in the game!">
+  <meta property="og:image" content="https://novakishh.github.io/bmhl/bmhl-preview.png">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+
+  <!-- PWA / FULL SCREEN APP META TAGS -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="BMHL Ref">
+  <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Ice_hockey_puck.svg/512px-Ice_hockey_puck.svg.png">
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
+
+    body {
+      background-color: #111;
+      color: white;
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      user-select: none; 
+      -webkit-user-select: none;
+      overscroll-behavior-y: none; 
+    }
+
+    /* --- TOP BAR: PERIOD & TIMER --- */
+    .top-bar {
+      background-color: #000;
+      border-bottom: 4px solid #d1122a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px 0;
+      padding-top: env(safe-area-inset-top, 20px);
+      flex-shrink: 0;
+    }
+
+    .period-controls {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 5px;
+    }
+
+    .timer-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin: 5px 0;
+    }
+
+    .btn-small {
+      background-color: #333;
+      color: #fff;
+      border: 2px solid #555;
+      border-radius: 8px;
+      font-size: 1.2rem;
+      font-family: 'Anton', sans-serif;
+      padding: 5px 15px;
+      touch-action: manipulation;
+      transition: opacity 0.2s;
+    }
+
+    .btn-small:active { background-color: #d1122a; border-color: #fff; }
+
+    #period-display {
+      font-family: 'Anton', sans-serif;
+      font-size: 2rem;
+      color: #d1122a;
+      text-transform: uppercase;
+    }
+
+    .timer-display {
+      font-family: 'Anton', sans-serif;
+      font-size: 4.5rem;
+      line-height: 1;
+      letter-spacing: 2px;
+    }
+
+    .timer-controls {
+      display: flex;
+      gap: 15px;
+    }
+
+    .btn-timer {
+      background-color: #d1122a;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Anton', sans-serif;
+      font-size: 1.5rem;
+      padding: 10px 30px;
+      touch-action: manipulation;
+    }
+    
+    .btn-timer:active { background-color: #fff; color: #d1122a; }
+
+    /* --- TEAM SCORING ZONES --- */
+    .scoring-area {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+
+    .team-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    .white-team { background-color: #fff; color: #000; }
+    .black-team { background-color: #000; color: #fff; border-top: 4px solid #333; }
+
+    .team-name {
+      font-family: 'Anton', sans-serif;
+      font-size: 2.5rem;
+      margin: 0;
+      text-transform: uppercase;
+      position: absolute;
+      top: 10px;
+      left: 15px;
+    }
+
+    .score {
+      font-family: 'Anton', sans-serif;
+      font-size: 8rem;
+      line-height: 1;
+      margin-top: 20px;
+    }
+
+    .score-controls {
+      display: flex;
+      gap: 20px;
+      margin-top: 10px;
+    }
+
+    .btn-score {
+      border: none;
+      border-radius: 12px;
+      font-family: 'Anton', sans-serif;
+      font-size: 3rem;
+      width: 80px;
+      height: 70px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      touch-action: manipulation;
+    }
+
+    .btn-minus { background-color: #555; color: #fff; opacity: 0.8; }
+    .btn-plus { background-color: #28a745; color: #fff; width: 120px; }
+
+    .white-team .btn-minus { background-color: #ccc; color: #000; }
+    
+    .btn-score:active { transform: scale(0.95); opacity: 1; }
+
+    /* --- UNOBTRUSIVE FOOTER --- */
+    .footer-bar {
+      background-color: #1a1a1a;
+      border-top: 2px solid #333;
+      padding: 8px 15px;
+      padding-bottom: env(safe-area-inset-bottom, 8px);
+      flex-shrink: 0;
+      display: flex;
+      justify-content: space-between;
+      font-family: 'Anton', sans-serif;
+      font-size: 1rem;
+      color: #666;
+    }
+    
+    .display-val {
+      color: #aaa;
+      margin-left: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="period-controls">
+      <button class="btn-small" id="period-minus-btn" onclick="changePeriod(-1)">-</button>
+      <div id="period-display">PERIOD 1</div>
+      <button class="btn-small" id="period-plus-btn" onclick="changePeriod(1)">+</button>
+    </div>
+    
+    <div class="timer-wrapper">
+      <button class="btn-small" id="time-minus-btn" onclick="adjustTime(-1)">-</button>
+      <div class="timer-display" id="time-display">15:00</div>
+      <button class="btn-small" id="time-plus-btn" onclick="adjustTime(1)">+</button>
+    </div>
+    
+    <div class="timer-controls">
+      <button class="btn-timer" id="start-stop-btn" onclick="toggleTimer()">START</button>
+      <button class="btn-small" id="reset-btn" onclick="resetTimer()" style="margin-left: 10px;">RESET</button>
+    </div>
+  </div>
+
+  <!-- SCORING ZONES -->
+  <div class="scoring-area">
+    
+    <!-- WHITE TEAM -->
+    <div class="team-card white-team">
+      <h2 class="team-name">WHITE</h2>
+      <div class="score" id="white-score">0</div>
+      <div class="score-controls">
+        <button class="btn-score btn-minus" onclick="changeScore('white', -1)">-</button>
+        <button class="btn-score btn-plus" onclick="changeScore('white', 1)">+</button>
+      </div>
+    </div>
+
+    <!-- BLACK TEAM -->
+    <div class="team-card black-team">
+      <h2 class="team-name">BLACK</h2>
+      <div class="score" id="black-score">0</div>
+      <div class="score-controls">
+        <button class="btn-score btn-minus" onclick="changeScore('black', -1)">-</button>
+        <button class="btn-score btn-plus" onclick="changeScore('black', 1)">+</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- UNOBTRUSIVE FOOTER -->
+  <div class="footer-bar">
+    <div>BMHL REF COMPANION</div>
+    <div>S<span class="display-val" id="season-display"></span> : G<span class="display-val" id="game-display"></span></div>
+  </div>
+
+  <script>
+    // --- YOUR GOOGLE SCRIPT URL ---
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyIOR9a1TsTk-NsxccwZdgNxmOPu_w7YWge9aEovUxCFXzWif3xsDQuLfT1DDbklQVm8g/exec';
+
+    // --- STATE VARIABLES ---
+    let goalEvents = [];       
+    let pendingSyncGoals = []; 
+    let currentPeriod = 1;
+    
+    let startingMinutes = 15; 
+    let totalSeconds = startingMinutes * 60; 
+    let timerInterval = null;
+    let isRunning = false;
+
+    // --- AUTO-CALCULATE SEASON & GAME ---
+    let autoSeason = 5;
+    let autoGame = 8;
+    
+    function calculateGameNumber() {
+      const refDate = new Date(2026, 6, 24); 
+      const now = new Date();
+      const diffTime = now.getTime() - refDate.getTime();
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays > 0) {
+        autoGame = 8 + Math.floor(diffDays / 7);
+      }
+      
+      document.getElementById('season-display').innerText = autoSeason;
+      document.getElementById('game-display').innerText = autoGame;
+    }
+
+    calculateGameNumber();
+
+    // --- SCORE & SILENT SYNC LOGIC ---
+    function changeScore(team, amount) {
+      if (amount === 1) {
+        let newGoal = {
+          id: Date.now(),
+          team: team,
+          period: currentPeriod,
+          time: document.getElementById('time-display').innerText
+        };
+        
+        goalEvents.push(newGoal);
+        pendingSyncGoals.push(newGoal);
+
+        setTimeout(() => {
+          triggerSilentSync(newGoal.id);
+        }, 60000); 
+
+      } else if (amount === -1) {
+        for (let i = goalEvents.length - 1; i >= 0; i--) {
+          if (goalEvents[i].team === team) {
+            let removedGoal = goalEvents.splice(i, 1)[0];
+            pendingSyncGoals = pendingSyncGoals.filter(g => g.id !== removedGoal.id);
+            break;
+          }
+        }
+      }
+      
+      let whiteScore = goalEvents.filter(e => e.team === 'white').length;
+      let blackScore = goalEvents.filter(e => e.team === 'black').length;
+      
+      document.getElementById('white-score').innerText = whiteScore;
+      document.getElementById('black-score').innerText = blackScore;
+    }
+
+    // THIS IS THE NEW FETCH FUNCTION FOR GITHUB
+    function triggerSilentSync(goalId) {
+      const goalIndex = pendingSyncGoals.findIndex(g => g.id === goalId);
+      
+      if (goalIndex > -1) {
+        const goalToSync = pendingSyncGoals.splice(goalIndex, 1)[0];
+
+        const payload = {
+          season: autoSeason,
+          game: autoGame,
+          events: [goalToSync] 
+        };
+
+        // Standard JS Fetch API to beam data to Google
+        fetch(scriptURL, {
+          method: 'POST',
+          body: JSON.stringify(payload),
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8",
+          }
+        })
+        .then(response => console.log("Goal synced silently to Google Sheets!"))
+        .catch(error => console.error("Sync failed:", error));
+      }
+    }
+
+    // --- PERIOD LOGIC ---
+    function changePeriod(amount) {
+      if (isRunning) return;
+      currentPeriod += amount;
+      if (currentPeriod < 1) currentPeriod = 1;
+      if (currentPeriod > 4) currentPeriod = 4;
+      let display = currentPeriod === 4 ? "OT / SO" : "PERIOD " + currentPeriod;
+      document.getElementById('period-display').innerText = display;
+    }
+
+    // --- TIMER LOGIC ---
+    function updateTimerDisplay() {
+      let minutes = Math.floor(totalSeconds / 60);
+      let seconds = totalSeconds % 60;
+      let displayString = minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+      document.getElementById('time-display').innerText = displayString;
+    }
+    
+    function adjustTime(amount) {
+      if (isRunning) return;
+      startingMinutes += amount;
+      if (startingMinutes < 1) startingMinutes = 1;
+      if (startingMinutes > 60) startingMinutes = 60;
+      totalSeconds = startingMinutes * 60;
+      updateTimerDisplay();
+    }
+
+    function toggleTimer() {
+      const btn = document.getElementById('start-stop-btn');
+      const setupBtns = [
+        document.getElementById('reset-btn'),
+        document.getElementById('period-minus-btn'),
+        document.getElementById('period-plus-btn'),
+        document.getElementById('time-minus-btn'),
+        document.getElementById('time-plus-btn')
+      ];
+      
+      if (isRunning) {
+        clearInterval(timerInterval);
+        isRunning = false;
+        btn.innerText = "START";
+        btn.style.backgroundColor = "#28a745"; 
+        setupBtns.forEach(el => el.style.opacity = "1");
+      } else {
+        isRunning = true;
+        btn.innerText = "PAUSE";
+        btn.style.backgroundColor = "#d1122a"; 
+        setupBtns.forEach(el => el.style.opacity = "0.3");
+        
+        timerInterval = setInterval(() => {
+          if (totalSeconds > 0) {
+            totalSeconds--;
+            updateTimerDisplay();
+          } else {
+            clearInterval(timerInterval);
+            isRunning = false;
+            btn.innerText = "START";
+            btn.style.backgroundColor = "#28a745";
+            setupBtns.forEach(el => el.style.opacity = "1"); 
+          }
+        }, 1000);
+      }
+    }
+
+    function resetTimer() {
+      if (isRunning) return;
+      clearInterval(timerInterval);
+      isRunning = false;
+      totalSeconds = startingMinutes * 60; 
+      const btn = document.getElementById('start-stop-btn');
+      btn.innerText = "START";
+      btn.style.backgroundColor = "#28a745";
+      updateTimerDisplay();
+    }
+  </script>
+</body>
+</html>
