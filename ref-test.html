@@ -636,6 +636,7 @@
 
     function updateShootoutUI() {
       const isShootout = (currentPeriod === 5);
+      const isFinal = (currentPeriod === 6);
       
       // Hide/Show Standard Scoreboard vs Shootout Screens
       document.getElementById('white-score').style.display = isShootout ? 'none' : 'block';
@@ -646,10 +647,20 @@
       document.getElementById('white-so-container').style.display = isShootout ? 'flex' : 'none';
       document.getElementById('black-so-container').style.display = isShootout ? 'flex' : 'none';
 
-      // Hide/Show Timer vs End Game Button
-      document.getElementById('timer-wrapper-section').style.display = isShootout ? 'none' : 'flex';
-      document.getElementById('timer-controls-section').style.display = isShootout ? 'none' : 'flex';
-      document.getElementById('so-end-btn').style.display = isShootout ? 'block' : 'none';
+      // Hide Timer & Controls on Shootout and Final
+      if (isShootout) {
+        document.getElementById('timer-wrapper-section').style.display = 'none';
+        document.getElementById('timer-controls-section').style.display = 'none';
+        document.getElementById('so-end-btn').style.display = 'block';
+      } else if (isFinal) {
+        document.getElementById('timer-wrapper-section').style.display = 'none';
+        document.getElementById('timer-controls-section').style.display = 'none';
+        document.getElementById('so-end-btn').style.display = 'none';
+      } else {
+        document.getElementById('timer-wrapper-section').style.display = 'flex';
+        document.getElementById('timer-controls-section').style.display = 'flex';
+        document.getElementById('so-end-btn').style.display = 'none';
+      }
     }
 
     function endShootoutGame() {
@@ -687,13 +698,14 @@
         }
       });
 
-      // 3. Send Shootout Detailed Log to Columns AC:AG (DO NOT TOUCH BOX SCORE)
+      // 3. Send Shootout Detailed Log to Columns AC:AG (WITH SEASON + GAME INCLUDED)
       if (shootoutEvents.length > 0) {
         fetch(scriptURL, {
           method: 'POST',
           body: JSON.stringify({
             secretToken: "BanhMiHockey2026!",
             type: "shootout",
+            season: autoSeason,
             game: autoGame,
             shootoutEvents: shootoutEvents
           }),
@@ -701,7 +713,7 @@
         });
       }
 
-      // 4. Update the on-screen display score ONLY (without queuing a fake Box Score goal)
+      // 4. Update the on-screen display score ONLY
       let finalWhite = goalEvents.filter(e => e.team === 'white').length;
       let finalBlack = goalEvents.filter(e => e.team === 'black').length;
       if (whiteGoals > blackGoals) finalWhite++;
