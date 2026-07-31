@@ -144,7 +144,7 @@
       font-family: 'Anton', sans-serif;
       font-size: 8rem;
       line-height: 1;
-      margin-top: 0px; /* Removed the previous 20px top margin */
+      margin-top: 0px; 
     }
 
     .score-controls {
@@ -173,12 +173,59 @@
     
     .btn-score:active { transform: scale(0.95); opacity: 1; }
 
+    /* --- SHOOTOUT TICKER --- */
+    .shootout-container {
+      display: none; /* Hidden until Period 5 (Shootout) */
+      flex-direction: column;
+      align-items: center;
+      margin-top: 55px; 
+      margin-bottom: -10px;
+      z-index: 10;
+    }
+
+    .so-ticker {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .so-circle {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      border: 3px solid #555;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Anton', sans-serif;
+      font-size: 1.5rem;
+      color: white;
+      background-color: transparent;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .white-team .so-circle { border-color: #888; color: #000; }
+    .black-team .so-circle { border-color: #555; color: #fff; }
+
+    .so-goal { background-color: #28a745 !important; border-color: #28a745 !important; color: #fff !important; }
+    .so-miss { background-color: #d1122a !important; border-color: #d1122a !important; color: #fff !important; }
+
+    .so-add-btn {
+      background-color: transparent;
+      border: 1px solid #555;
+      color: #888;
+      font-size: 0.8rem;
+      padding: 3px 10px;
+    }
+
+    .white-team .so-add-btn { border-color: #aaa; color: #444; }
+
     /* --- UNOBTRUSIVE FOOTER --- */
     .footer-bar {
       background-color: #1a1a1a;
       border-top: 2px solid #333;
       padding: 12px 15px;
-      /* Forces it to sit above the iPhone swipe bar */
       padding-bottom: calc(env(safe-area-inset-bottom, 15px) + 12px);
       flex-shrink: 0;
       display: flex;
@@ -275,6 +322,17 @@
     <!-- WHITE TEAM -->
     <div class="team-card white-team">
       <h2 class="team-name">WHITE</h2>
+
+      <!-- WHITE SHOOTOUT TICKER -->
+      <div class="shootout-container" id="white-so-container">
+        <div class="so-ticker" id="white-ticker">
+          <div class="so-circle" onclick="toggleCircle(this)"></div>
+          <div class="so-circle" onclick="toggleCircle(this)"></div>
+          <div class="so-circle" onclick="toggleCircle(this)"></div>
+        </div>
+        <button class="btn-small so-add-btn" onclick="addShooter('white')">+ SHOOTER</button>
+      </div>
+
       <div class="score" id="white-score">0</div>
       <div class="score-controls">
         <button class="btn-score btn-minus" onclick="changeScore('white', -1)">-</button>
@@ -285,6 +343,17 @@
     <!-- BLACK TEAM -->
     <div class="team-card black-team">
       <h2 class="team-name">BLACK</h2>
+
+      <!-- BLACK SHOOTOUT TICKER -->
+      <div class="shootout-container" id="black-so-container">
+        <div class="so-ticker" id="black-ticker">
+          <div class="so-circle" onclick="toggleCircle(this)"></div>
+          <div class="so-circle" onclick="toggleCircle(this)"></div>
+          <div class="so-circle" onclick="toggleCircle(this)"></div>
+        </div>
+        <button class="btn-small so-add-btn" onclick="addShooter('black')">+ SHOOTER</button>
+      </div>
+
       <div class="score" id="black-score">0</div>
       <div class="score-controls">
         <button class="btn-score btn-minus" onclick="changeScore('black', -1)">-</button>
@@ -379,7 +448,6 @@
       document.getElementById('black-score').innerText = blackScore;
     }
 
-    // THIS IS THE NEW FETCH FUNCTION FOR GITHUB
     function triggerSilentSync(goalId) {
       const goalIndex = pendingSyncGoals.findIndex(g => g.id === goalId);
       
@@ -393,7 +461,6 @@
           events: [goalToSync] 
         };
 
-        // Standard JS Fetch API to beam data to Google
         fetch(scriptURL, {
           method: 'POST',
           body: JSON.stringify(payload),
@@ -419,28 +486,58 @@
       if (currentPeriod === 6) display = "FINAL";
       
       document.getElementById('period-display').innerText = display;
+      updateShootoutUI();
     }
 
     function setPostGame(choice) {
-      // Hide the popup
       document.getElementById('end-game-modal').style.display = 'none';
       
       if (choice === 'OT') {
         currentPeriod = 4;
         document.getElementById('period-display').innerText = "OVERTIME";
-        startingMinutes = 5; // Defaults OT clock to 5 mins
+        startingMinutes = 5; 
       } else if (choice === 'SO') {
         currentPeriod = 5;
         document.getElementById('period-display').innerText = "SHOOTOUT";
-        startingMinutes = 0; // Sets clock to 00:00 for shootout
+        startingMinutes = 0; 
       } else if (choice === 'FINAL') {
         currentPeriod = 6;
         document.getElementById('period-display').innerText = "FINAL";
-        startingMinutes = 0; // Sets clock to 00:00 for end of game
+        startingMinutes = 0; 
       }
       
       totalSeconds = startingMinutes * 60;
       updateTimerDisplay();
+      updateShootoutUI();
+    }
+
+    // --- SHOOTOUT TICKER LOGIC ---
+    function toggleCircle(el) {
+      if (el.classList.contains('so-goal')) {
+        el.classList.remove('so-goal');
+        el.classList.add('so-miss');
+        el.innerText = "X";
+      } else if (el.classList.contains('so-miss')) {
+        el.classList.remove('so-miss');
+        el.innerText = "";
+      } else {
+        el.classList.add('so-goal');
+        el.innerText = "✓";
+      }
+    }
+
+    function addShooter(team) {
+      const ticker = document.getElementById(team + '-ticker');
+      const newCircle = document.createElement('div');
+      newCircle.className = 'so-circle';
+      newCircle.onclick = function() { toggleCircle(this); };
+      ticker.appendChild(newCircle);
+    }
+
+    function updateShootoutUI() {
+      const displayState = (currentPeriod === 5) ? 'flex' : 'none';
+      document.getElementById('white-so-container').style.display = displayState;
+      document.getElementById('black-so-container').style.display = displayState;
     }
 
     // --- TIMER LOGIC ---
@@ -491,23 +588,18 @@
             clearInterval(timerInterval);
             isRunning = false;
             
-            // 1. Unlock the UI
             btn.innerText = "START";
             btn.style.backgroundColor = "#28a745";
             setupBtns.forEach(el => el.style.opacity = "1"); 
 
-            // Pop the modal after Period 3. Otherwise, just auto-advance normally (unless OT is over).
+            // Pop modal after Period 3. Otherwise auto-advance periods.
             if (currentPeriod === 3) {
               document.getElementById('end-game-modal').style.display = 'flex';
             } else if (currentPeriod < 3) {
-            
-              // 2. Automatically advance to the next period
               changePeriod(1);
-              
-              // 3. Automatically reset the clock to 20:00 for the next period
               resetTimer();
             }
-          } // <--- THIS WAS THE MISSING BRACKET!
+          }
         }, 1000);
       }
     }
