@@ -47,15 +47,18 @@
       flex-direction: column;
       align-items: center;
       padding: 10px 0;
-      padding-top: env(safe-area-inset-top, 20px);
+      padding-top: max(env(safe-area-inset-top), 15px);
       flex-shrink: 0;
+      z-index: 100;
     }
 
     .period-controls {
-      display: flex;
+      display: flex !important;
       align-items: center;
+      justify-content: center;
       gap: 15px;
-      margin-bottom: 5px;
+      margin-bottom: 8px;
+      width: 100%;
     }
 
     .timer-wrapper {
@@ -81,9 +84,12 @@
 
     #period-display {
       font-family: 'Anton', sans-serif;
-      font-size: 2rem;
+      font-size: 2.2rem;
       color: #d1122a;
       text-transform: uppercase;
+      letter-spacing: 1px;
+      text-align: center;
+      min-width: 140px;
     }
 
     .timer-display {
@@ -656,6 +662,9 @@
       btn.style.backgroundColor = "#28a745";
       updateTimerDisplay();
     }
+
+    // Synchronize UI display state on startup
+    updateShootoutUI();
   </script>
 </body>
 </html>
