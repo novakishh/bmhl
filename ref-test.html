@@ -111,6 +111,20 @@
     
     .btn-timer:active { background-color: #fff; color: #d1122a; }
 
+    /* SHOOTOUT END GAME BUTTON */
+    .btn-end-game {
+      background-color: #d1122a;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Anton', sans-serif;
+      font-size: 1.8rem;
+      padding: 12px 40px;
+      margin-top: 10px;
+      display: none; /* Controlled via JS */
+      touch-action: manipulation;
+    }
+
     /* --- TEAM SCORING ZONES --- */
     .scoring-area {
       display: flex;
@@ -173,32 +187,36 @@
     
     .btn-score:active { transform: scale(0.95); opacity: 1; }
 
-    /* --- SHOOTOUT TICKER --- */
+    /* --- FULL SCREEN SHOOTOUT MODE --- */
     .shootout-container {
-      display: none; /* Hidden until Period 5 (Shootout) */
+      display: none; /* Hidden until Period 5 */
       flex-direction: column;
       align-items: center;
-      margin-top: 55px; 
-      margin-bottom: -10px;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
       z-index: 10;
     }
 
     .so-ticker {
       display: flex;
-      gap: 12px;
-      margin-bottom: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 15px;
+      max-width: 90%;
     }
 
     .so-circle {
-      width: 35px;
-      height: 35px;
+      width: 55px;
+      height: 55px;
       border-radius: 50%;
-      border: 3px solid #555;
+      border: 4px solid #555;
       display: flex;
       justify-content: center;
       align-items: center;
       font-family: 'Anton', sans-serif;
-      font-size: 1.5rem;
+      font-size: 2.2rem;
       color: white;
       background-color: transparent;
       cursor: pointer;
@@ -213,10 +231,10 @@
 
     .so-add-btn {
       background-color: transparent;
-      border: 1px solid #555;
+      border: 2px solid #555;
       color: #888;
-      font-size: 0.8rem;
-      padding: 3px 10px;
+      font-size: 1.1rem;
+      padding: 8px 20px;
     }
 
     .white-team .so-add-btn { border-color: #aaa; color: #444; }
@@ -304,16 +322,20 @@
       <button class="btn-small" id="period-plus-btn" onclick="changePeriod(1)">+</button>
     </div>
     
-    <div class="timer-wrapper">
+    <!-- STANDARD TIMER ELEMENTS -->
+    <div class="timer-wrapper" id="timer-wrapper-section">
       <button class="btn-small" id="time-minus-btn" onclick="adjustTime(-1)">-</button>
       <div class="timer-display" id="time-display">20:00</div>
       <button class="btn-small" id="time-plus-btn" onclick="adjustTime(1)">+</button>
     </div>
     
-    <div class="timer-controls">
+    <div class="timer-controls" id="timer-controls-section">
       <button class="btn-timer" id="start-stop-btn" onclick="toggleTimer()">START</button>
       <button class="btn-small" id="reset-btn" onclick="resetTimer()" style="margin-left: 10px;">RESET</button>
     </div>
+
+    <!-- SHOOTOUT END GAME BUTTON -->
+    <button class="btn-end-game" id="so-end-btn" onclick="endShootoutGame()">END GAME</button>
   </div>
 
   <!-- SCORING ZONES -->
@@ -323,7 +345,14 @@
     <div class="team-card white-team">
       <h2 class="team-name">WHITE</h2>
 
-      <!-- WHITE SHOOTOUT TICKER -->
+      <!-- STANDARD SCORE -->
+      <div class="score" id="white-score">0</div>
+      <div class="score-controls" id="white-score-controls">
+        <button class="btn-score btn-minus" onclick="changeScore('white', -1)">-</button>
+        <button class="btn-score btn-plus" onclick="changeScore('white', 1)">+</button>
+      </div>
+
+      <!-- FULL SHOOTOUT TICKER VIEW -->
       <div class="shootout-container" id="white-so-container">
         <div class="so-ticker" id="white-ticker">
           <div class="so-circle" onclick="toggleCircle(this)"></div>
@@ -332,19 +361,20 @@
         </div>
         <button class="btn-small so-add-btn" onclick="addShooter('white')">+ SHOOTER</button>
       </div>
-
-      <div class="score" id="white-score">0</div>
-      <div class="score-controls">
-        <button class="btn-score btn-minus" onclick="changeScore('white', -1)">-</button>
-        <button class="btn-score btn-plus" onclick="changeScore('white', 1)">+</button>
-      </div>
     </div>
 
     <!-- BLACK TEAM -->
     <div class="team-card black-team">
       <h2 class="team-name">BLACK</h2>
 
-      <!-- BLACK SHOOTOUT TICKER -->
+      <!-- STANDARD SCORE -->
+      <div class="score" id="black-score">0</div>
+      <div class="score-controls" id="black-score-controls">
+        <button class="btn-score btn-minus" onclick="changeScore('black', -1)">-</button>
+        <button class="btn-score btn-plus" onclick="changeScore('black', 1)">+</button>
+      </div>
+
+      <!-- FULL SHOOTOUT TICKER VIEW -->
       <div class="shootout-container" id="black-so-container">
         <div class="so-ticker" id="black-ticker">
           <div class="so-circle" onclick="toggleCircle(this)"></div>
@@ -352,12 +382,6 @@
           <div class="so-circle" onclick="toggleCircle(this)"></div>
         </div>
         <button class="btn-small so-add-btn" onclick="addShooter('black')">+ SHOOTER</button>
-      </div>
-
-      <div class="score" id="black-score">0</div>
-      <div class="score-controls">
-        <button class="btn-score btn-minus" onclick="changeScore('black', -1)">-</button>
-        <button class="btn-score btn-plus" onclick="changeScore('black', 1)">+</button>
       </div>
     </div>
 
@@ -535,9 +559,27 @@
     }
 
     function updateShootoutUI() {
-      const displayState = (currentPeriod === 5) ? 'flex' : 'none';
-      document.getElementById('white-so-container').style.display = displayState;
-      document.getElementById('black-so-container').style.display = displayState;
+      const isShootout = (currentPeriod === 5);
+      
+      // Hide/Show Standard Scoreboard vs Shootout Screens
+      document.getElementById('white-score').style.display = isShootout ? 'none' : 'block';
+      document.getElementById('white-score-controls').style.display = isShootout ? 'none' : 'flex';
+      document.getElementById('black-score').style.display = isShootout ? 'none' : 'block';
+      document.getElementById('black-score-controls').style.display = isShootout ? 'none' : 'flex';
+
+      document.getElementById('white-so-container').style.display = isShootout ? 'flex' : 'none';
+      document.getElementById('black-so-container').style.display = isShootout ? 'flex' : 'none';
+
+      // Hide/Show Timer vs End Game Button
+      document.getElementById('timer-wrapper-section').style.display = isShootout ? 'none' : 'flex';
+      document.getElementById('timer-controls-section').style.display = isShootout ? 'none' : 'flex';
+      document.getElementById('so-end-btn').style.display = isShootout ? 'block' : 'none';
+    }
+
+    function endShootoutGame() {
+      currentPeriod = 6;
+      document.getElementById('period-display').innerText = "FINAL";
+      updateShootoutUI();
     }
 
     // --- TIMER LOGIC ---
