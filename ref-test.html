@@ -192,6 +192,59 @@
       color: #aaa;
       margin-left: 5px;
     }
+
+    /* --- MODAL POPUP --- */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .modal-content {
+      background: #111;
+      padding: 30px 20px;
+      border-radius: 15px;
+      border: 2px solid #333;
+      text-align: center;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .modal-content h2 {
+      font-family: 'Anton', sans-serif;
+      color: #fff;
+      font-size: 2.5rem;
+      margin: 0 0 10px 0;
+    }
+
+    .modal-content p {
+      color: #aaa;
+      margin-bottom: 25px;
+      font-size: 1.1rem;
+    }
+
+    .btn-modal {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 15px;
+      font-family: 'Anton', sans-serif;
+      font-size: 1.5rem;
+      border-radius: 8px;
+      border: none;
+      color: white;
+      touch-action: manipulation;
+    }
+
+    .btn-ot { background-color: #ff9800; color: #000; }
+    .btn-so { background-color: #9c27b0; }
+    .btn-final { background-color: #d1122a; }
   </style>
 </head>
 <body>
@@ -245,6 +298,17 @@
   <div class="footer-bar">
     <div>BMHL REF COMPANION</div>
     <div>S<span class="display-val" id="season-display"></span> : G<span class="display-val" id="game-display"></span></div>
+  </div>
+
+  <!-- END OF REGULATION POPUP -->
+  <div id="end-game-modal" class="modal-overlay">
+    <div class="modal-content">
+      <h2>END OF REGULATION</h2>
+      <p>Is this game going to Overtime, a Shootout, or is it Final?</p>
+      <button class="btn-modal btn-ot" onclick="setPostGame('OT')">OVERTIME</button>
+      <button class="btn-modal btn-so" onclick="setPostGame('SO')">SHOOTOUT</button>
+      <button class="btn-modal btn-final" onclick="setPostGame('FINAL')">GAME OVER</button>
+    </div>
   </div>
 
   <script>
@@ -347,9 +411,36 @@
       if (isRunning) return;
       currentPeriod += amount;
       if (currentPeriod < 1) currentPeriod = 1;
-      if (currentPeriod > 4) currentPeriod = 4;
-      let display = currentPeriod === 4 ? "OT / SO" : "PERIOD " + currentPeriod;
+      if (currentPeriod > 6) currentPeriod = 6;
+      
+      let display = "PERIOD " + currentPeriod;
+      if (currentPeriod === 4) display = "OVERTIME";
+      if (currentPeriod === 5) display = "SHOOTOUT";
+      if (currentPeriod === 6) display = "FINAL";
+      
       document.getElementById('period-display').innerText = display;
+    }
+
+    function setPostGame(choice) {
+      // Hide the popup
+      document.getElementById('end-game-modal').style.display = 'none';
+      
+      if (choice === 'OT') {
+        currentPeriod = 4;
+        document.getElementById('period-display').innerText = "OVERTIME";
+        startingMinutes = 5; // Defaults OT clock to 5 mins
+      } else if (choice === 'SO') {
+        currentPeriod = 5;
+        document.getElementById('period-display').innerText = "SHOOTOUT";
+        startingMinutes = 0; // Sets clock to 00:00 for shootout
+      } else if (choice === 'FINAL') {
+        currentPeriod = 6;
+        document.getElementById('period-display').innerText = "FINAL";
+        startingMinutes = 0; // Sets clock to 00:00 for end of game
+      }
+      
+      totalSeconds = startingMinutes * 60;
+      updateTimerDisplay();
     }
 
     // --- TIMER LOGIC ---
@@ -404,6 +495,11 @@
             btn.innerText = "START";
             btn.style.backgroundColor = "#28a745";
             setupBtns.forEach(el => el.style.opacity = "1"); 
+
+            // Pop the modal after Period 3. Otherwise, just auto-advance normally (unless OT is over).
+            if (currentPeriod === 3) {
+              document.getElementById('end-game-modal').style.display = 'flex';
+            } else if (currentPeriod < 3) {
             
             // 2. Automatically advance to the next period
             changePeriod(1);
