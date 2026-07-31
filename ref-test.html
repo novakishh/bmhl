@@ -127,7 +127,7 @@
       font-size: 1.8rem;
       padding: 12px 40px;
       margin-top: 10px;
-      display: none; /* Controlled via JS */
+      display: none; 
       touch-action: manipulation;
     }
 
@@ -195,7 +195,7 @@
 
     /* --- FULL SCREEN SHOOTOUT MODE --- */
     .shootout-container {
-      display: none; /* Hidden until Period 5 */
+      display: none; 
       flex-direction: column;
       align-items: center;
       justify-content: center;
@@ -264,7 +264,7 @@
       margin-left: 5px;
     }
 
-    /* --- MODAL POPUP --- */
+    /* --- MODAL POPUPS --- */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -316,6 +316,55 @@
     .btn-ot { background-color: #ff9800; color: #000; }
     .btn-so { background-color: #9c27b0; }
     .btn-final { background-color: #d1122a; }
+
+    /* SHOOTOUT CHOICE POPUP */
+    .so-choice-box {
+      background: #111;
+      padding: 25px 20px;
+      border-radius: 15px;
+      border: 2px solid #444;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      align-items: center;
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .so-choice-buttons {
+      display: flex;
+      gap: 20px;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .btn-so-choice {
+      flex: 1;
+      height: 80px;
+      border-radius: 12px;
+      border: none;
+      font-family: 'Anton', sans-serif;
+      font-size: 3rem;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      touch-action: manipulation;
+    }
+
+    .btn-so-goal { background-color: #28a745; }
+    .btn-so-miss { background-color: #d1122a; }
+    .btn-so-clear { 
+      background-color: #444; 
+      color: #ccc; 
+      font-size: 1.2rem; 
+      width: 100%; 
+      padding: 12px; 
+      border-radius: 8px; 
+      border: none;
+      font-family: 'Anton', sans-serif;
+      touch-action: manipulation;
+    }
   </style>
 </head>
 <body>
@@ -361,9 +410,9 @@
       <!-- FULL SHOOTOUT TICKER VIEW -->
       <div class="shootout-container" id="white-so-container">
         <div class="so-ticker" id="white-ticker">
-          <div class="so-circle" onclick="toggleCircle(this)"></div>
-          <div class="so-circle" onclick="toggleCircle(this)"></div>
-          <div class="so-circle" onclick="toggleCircle(this)"></div>
+          <div class="so-circle" onclick="openSoChoice(this)"></div>
+          <div class="so-circle" onclick="openSoChoice(this)"></div>
+          <div class="so-circle" onclick="openSoChoice(this)"></div>
         </div>
         <button class="btn-small so-add-btn" onclick="addShooter('white')">+ SHOOTER</button>
       </div>
@@ -383,9 +432,9 @@
       <!-- FULL SHOOTOUT TICKER VIEW -->
       <div class="shootout-container" id="black-so-container">
         <div class="so-ticker" id="black-ticker">
-          <div class="so-circle" onclick="toggleCircle(this)"></div>
-          <div class="so-circle" onclick="toggleCircle(this)"></div>
-          <div class="so-circle" onclick="toggleCircle(this)"></div>
+          <div class="so-circle" onclick="openSoChoice(this)"></div>
+          <div class="so-circle" onclick="openSoChoice(this)"></div>
+          <div class="so-circle" onclick="openSoChoice(this)"></div>
         </div>
         <button class="btn-small so-add-btn" onclick="addShooter('black')">+ SHOOTER</button>
       </div>
@@ -410,6 +459,17 @@
     </div>
   </div>
 
+  <!-- SHOOTOUT CHOICE POPUP -->
+  <div id="so-choice-modal" class="modal-overlay">
+    <div class="so-choice-box">
+      <div class="so-choice-buttons">
+        <button class="btn-so-choice btn-so-goal" onclick="applySoChoice('goal')">✓</button>
+        <button class="btn-so-choice btn-so-miss" onclick="applySoChoice('miss')">X</button>
+      </div>
+      <button class="btn-so-clear" onclick="applySoChoice('clear')">CLEAR CIRCLE</button>
+    </div>
+  </div>
+
   <script>
     // --- YOUR GOOGLE SCRIPT URL ---
     const scriptURL = 'https://script.google.com/macros/s/AKfycbyIOR9a1TsTk-NsxccwZdgNxmOPu_w7YWge9aEovUxCFXzWif3xsDQuLfT1DDbklQVm8g/exec';
@@ -418,6 +478,7 @@
     let goalEvents = [];       
     let pendingSyncGoals = []; 
     let currentPeriod = 1;
+    let activeSoCircle = null;
     
     let startingMinutes = 20; 
     let totalSeconds = startingMinutes * 60; 
@@ -541,26 +602,35 @@
       updateShootoutUI();
     }
 
-    // --- SHOOTOUT TICKER LOGIC ---
-    function toggleCircle(el) {
-      if (el.classList.contains('so-goal')) {
-        el.classList.remove('so-goal');
-        el.classList.add('so-miss');
-        el.innerText = "X";
-      } else if (el.classList.contains('so-miss')) {
-        el.classList.remove('so-miss');
-        el.innerText = "";
-      } else {
-        el.classList.add('so-goal');
-        el.innerText = "✓";
+    // --- SHOOTOUT TICKER POPUP LOGIC ---
+    function openSoChoice(el) {
+      activeSoCircle = el;
+      document.getElementById('so-choice-modal').style.display = 'flex';
+    }
+
+    function applySoChoice(result) {
+      if (!activeSoCircle) return;
+
+      activeSoCircle.classList.remove('so-goal', 'so-miss');
+      activeSoCircle.innerText = "";
+
+      if (result === 'goal') {
+        activeSoCircle.classList.add('so-goal');
+        activeSoCircle.innerText = "✓";
+      } else if (result === 'miss') {
+        activeSoCircle.classList.add('so-miss');
+        activeSoCircle.innerText = "X";
       }
+
+      document.getElementById('so-choice-modal').style.display = 'none';
+      activeSoCircle = null;
     }
 
     function addShooter(team) {
       const ticker = document.getElementById(team + '-ticker');
       const newCircle = document.createElement('div');
       newCircle.className = 'so-circle';
-      newCircle.onclick = function() { toggleCircle(this); };
+      newCircle.onclick = function() { openSoChoice(this); };
       ticker.appendChild(newCircle);
     }
 
