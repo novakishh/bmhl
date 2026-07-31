@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   
   <title>BMHL - Banh Mi Hockey League</title>
 
@@ -144,7 +144,7 @@
       font-family: 'Anton', sans-serif;
       font-size: 8rem;
       line-height: 1;
-      margin-top: 20px;
+      margin-top: 0px; /* Removed the previous 20px top margin */
     }
 
     .score-controls {
@@ -177,8 +177,9 @@
     .footer-bar {
       background-color: #1a1a1a;
       border-top: 2px solid #333;
-      padding: 8px 15px;
-      padding-bottom: env(safe-area-inset-bottom, 8px);
+      padding: 12px 15px;
+      /* Forces it to sit above the iPhone swipe bar */
+      padding-bottom: calc(env(safe-area-inset-bottom, 15px) + 12px);
       flex-shrink: 0;
       display: flex;
       justify-content: space-between;
