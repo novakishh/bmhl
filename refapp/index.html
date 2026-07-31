@@ -365,9 +365,43 @@
       font-family: 'Anton', sans-serif;
       touch-action: manipulation;
     }
+
+    /* --- LANDSCAPE BLOCKER --- */
+    @media screen and (orientation: landscape) {
+      #landscape-warning {
+        display: flex !important;
+      }
+    }
+
+    #landscape-warning {
+      display: none;
+      position: fixed;
+      top: 0; 
+      left: 0; 
+      width: 100vw; 
+      height: 100vh;
+      background-color: #000;
+      color: #fff;
+      z-index: 999999;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      flex-direction: column;
+      font-family: 'Anton', sans-serif;
+      font-size: 2rem;
+      padding: 20px;
+      box-sizing: border-box;
+    }
   </style>
 </head>
 <body>
+
+  <!-- LANDSCAPE ROTATION WARNING SHIELD -->
+  <div id="landscape-warning">
+    <div style="font-size: 4rem; margin-bottom: 10px;">📱🔄</div>
+    <div>PLEASE ROTATE YOUR DEVICE</div>
+    <div style="font-size: 1.2rem; color: #d1122a; margin-top: 10px;">PORTRAIT MODE ONLY</div>
+  </div>
 
   <!-- TOP BAR -->
   <div class="top-bar">
@@ -805,6 +839,11 @@
 
     // Synchronize UI display state on startup
     updateShootoutUI();
+
+    // Force screen orientation to portrait if supported by device
+  if (screen.orientation && screen.orientation.lock) {
+    screen.orientation.lock('portrait').catch(() => {});
+  }
   </script>
 </body>
 </html>
