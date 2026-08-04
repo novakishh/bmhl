@@ -19,6 +19,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="BMHL Draft">
   
+  <!-- Jitsi External API -->
+  <script src="https://meet.jit.si/external_api.js"></script>
+
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
 
@@ -74,6 +77,42 @@
       padding: 5px;
       font-size: 1.2rem;
       display: none;
+    }
+
+    /* --- VIDEO STREAM SECTION --- */
+    .video-section {
+      background-color: #000;
+      border-bottom: 2px solid #333;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .video-toggle-btn {
+      background-color: #222;
+      color: #aaa;
+      border: 1px solid #444;
+      padding: 6px 15px;
+      font-family: 'Anton', sans-serif;
+      font-size: 0.9rem;
+      cursor: pointer;
+      width: 100%;
+      text-align: center;
+    }
+
+    #jitsi-container {
+      width: 100%;
+      height: 240px;
+      display: block;
+    }
+
+    @media screen and (min-width: 768px) {
+      #jitsi-container {
+        height: 320px;
+      }
     }
 
     /* --- DRAFT BOARD LAYOUT --- */
@@ -288,6 +327,12 @@
     <div class="turn-indicator" id="turn-display">WAITING FOR DATA</div>
   </div>
 
+  <!-- LIVE VIDEO CALL CONTAINER -->
+  <div class="video-section">
+    <button class="video-toggle-btn" onclick="toggleVideoPanel()">🎥 TOGGLE LIVE VIDEO CALL</button>
+    <div id="jitsi-container"></div>
+  </div>
+
   <!-- DRAFT BOARD -->
   <div class="draft-container">
     
@@ -354,13 +399,60 @@
     const scriptURL = 'https://script.google.com/macros/s/AKfycbyIOR9a1TsTk-NsxccwZdgNxmOPu_w7YWge9aEovUxCFXzWif3xsDQuLfT1DDbklQVm8g/exec';
     
     let isUnlocked = false;
-    let myIdentity = null; // Can be "Commissioner" or the actual string name of the Captain
+    let myIdentity = "Spectator";
+    let jitsiApi = null;
     
     let draftState = {
       players: [],
       settings: { cap1: "Team 1", cap2: "Team 2", turn: "Waiting", status: "WAITING" }
     };
     let pendingPick = null;
+
+    // --- EMBED JITSI LIVE VIDEO CALL ---
+    function initVideoCall(displayName, startMuted) {
+      const domain = "meet.jit.si";
+      const roomName = "BMHL_Weekly_Draft_Room_2026"; // Room name shared across league
+      
+      const options = {
+        roomName: roomName,
+        width: "100%",
+        height: "100%",
+        parentNode: document.querySelector('#jitsi-container'),
+        userInfo: {
+          displayName: displayName
+        },
+        configOverwrite: {
+          startWithAudioMuted: startMuted,
+          startWithVideoMuted: startMuted,
+          prejoinPageEnabled: false,
+          disableDeepLinking: true
+        },
+        interfaceConfigOverwrite: {
+          TOOLBAR_BUTTONS: [
+            'microphone', 'camera', 'tileview', 'fullscreen'
+          ],
+          SHOW_JITSI_WATERMARK: false
+        }
+      };
+
+      if (jitsiApi) {
+        jitsiApi.dispose(); // Clean up old instance if identity changes
+      }
+
+      jitsiApi = new JitsiMeetExternalAPI(domain, options);
+    }
+
+    function toggleVideoPanel() {
+      const el = document.getElementById('jitsi-container');
+      if (el.style.display === "none") {
+        el.style.display = "block";
+      } else {
+        el.style.display = "none";
+      }
+    }
+
+    // Initialize Video Call in Muted Spectator Mode on Startup
+    initVideoCall("Spectator", true);
 
     // --- FETCH DATA (POLLING EVERY 3 SECONDS) ---
     async function fetchDraftData() {
@@ -385,7 +477,6 @@
       const cap1 = draftState.settings.cap1 || "Team 1";
       const cap2 = draftState.settings.cap2 || "Team 2";
       
-      // Update Login Modal Dropdown with actual Captain names
       document.getElementById('opt-cap1').value = cap1;
       document.getElementById('opt-cap1').innerText = cap1.toUpperCase();
       document.getElementById('opt-cap2').value = cap2;
@@ -396,13 +487,12 @@
       let turnText = draftState.settings.turn ? draftState.settings.turn.toUpperCase() + "'S TURN" : "WAITING";
       if (draftState.settings.status !== "LIVE") turnText = "DRAFT PAUSED";
       
-      // If a logged-in captain is viewing, tell them directly if it's their turn
       if (isUnlocked && myIdentity !== "Commissioner") {
         if (draftState.settings.turn === myIdentity) {
           turnText = "👉 YOUR TURN 👈";
-          document.getElementById('turn-display').style.color = "#28a745"; // Green for their turn
+          document.getElementById('turn-display').style.color = "#28a745";
         } else {
-          document.getElementById('turn-display').style.color = "#ffc107"; // Yellow for waiting
+          document.getElementById('turn-display').style.color = "#ffc107";
         }
       }
       
@@ -424,7 +514,6 @@
         return a.name.localeCompare(b.name);
       });
 
-      // Determine if the currently logged in user is allowed to pick right now
       let isMyTurn = false;
       if (isUnlocked && draftState.settings.status === "LIVE") {
         if (myIdentity === "Commissioner" || myIdentity === draftState.settings.turn) {
@@ -432,7 +521,6 @@
         }
       }
 
-      // Add/Remove interactive visual class
       if (isMyTurn) {
         document.getElementById('available-panel').classList.add('interactive');
       } else {
@@ -477,13 +565,15 @@
         myIdentity = document.getElementById('identity-select').value;
         
         closeModal('login-modal');
-        document.getElementById('login-btn').style.display = 'none'; // Hide unlock button
+        document.getElementById('login-btn').style.display = 'none';
         
-        // Show identity banner at the very top
         const banner = document.getElementById('identity-banner');
         banner.style.display = 'block';
         banner.innerText = `LOGGED IN AS: ${myIdentity.toUpperCase()}`;
         
+        // Re-initialize Video Call with Captain's real display name, unmuted!
+        initVideoCall(myIdentity, false);
+
         renderDraftBoard(); 
       } else {
         alert("Incorrect PIN");
@@ -505,8 +595,6 @@
       document.getElementById('confirm-buttons').style.display = 'none';
       document.getElementById('pick-loader').style.display = 'block';
 
-      // We explicitly send the turn of whoever the sheet thinks is drafting, 
-      // just in case the Commissioner is the one pushing the button.
       const payload = {
         secretToken: "BanhMiHockey2026!",
         type: "draftPick",
