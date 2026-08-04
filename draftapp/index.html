@@ -305,7 +305,7 @@
           <div class="role-badge" id="user-role-display">SPECTATOR MODE</div>
           <div class="header-btn-group">
             <a href="../" class="btn-nav">← STATS</a>
-            <button class="btn-login" id="login-btn" onclick="openLogin()">Captain Login</button>
+            <button class="btn-login" id="login-btn" onclick="openLogin()">UNLOCK DRAFT</button>
           </div>
         </div>
 
@@ -403,7 +403,7 @@
       else if (tab === 'team2') { document.getElementById('tab-btn-team2').classList.add('active'); document.getElementById('panel-team2').classList.add('active-tab'); }
     }
 
-    // Dynamic polling loop (1.5s interval during LIVE draft)
+    // Dynamic polling loop (1.5s during LIVE draft)
     async function pollLoop() {
       if (!isSubmitting) {
         await fetchDraftData();
@@ -415,8 +415,16 @@
     async function fetchDraftData() {
       try {
         const response = await fetch(scriptURL + "?api=draft");
-        const data = await response.json();
-        if (!data.error) {
+        const text = await response.text();
+        
+        // Guard against HTML error pages from Google Apps Script
+        if (text.startsWith("<")) {
+          console.warn("Server temporarily busy, retrying next poll...");
+          return;
+        }
+
+        const data = JSON.parse(text);
+        if (data && !data.error) {
           draftState = data;
           renderDraftBoard();
         }
@@ -535,7 +543,13 @@
       const payload = { secretToken: "BanhMiHockey2026!", type: "readyUp", captain: myIdentity };
       try {
         const response = await fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" } });
-        const data = await response.json();
+        const text = await response.text();
+        if (text.startsWith("<")) {
+          alert("Server busy processing ready status. Retrying...");
+          await fetchDraftData();
+          return;
+        }
+        const data = JSON.parse(text);
         if (data.error) alert("Error: " + data.error);
         else { draftState = data; renderDraftBoard(); }
       } catch (err) { alert("Error sending ready status."); } 
@@ -543,14 +557,14 @@
     }
 
     async function submitPick() {
-      if (!pendingPick) return;
+      if (!pendingPick || isSubmitting) return;
       isSubmitting = true;
 
       const playerToPick = pendingPick;
       const pickingCaptain = draftState.settings.turn;
       closeModal('confirm-modal');
 
-      // 1. OPTIMISTIC INSTANT UI UPDATE (0ms delay for local user)
+      // 1. OPTIMISTIC INSTANT UI UPDATE (0ms delay for picking user)
       let playerObj = draftState.players.find(p => p.name.toLowerCase() === playerToPick.toLowerCase());
       if (playerObj) {
         playerObj.draftedBy = pickingCaptain;
@@ -568,13 +582,20 @@
       const payload = { secretToken: "BanhMiHockey2026!", type: "draftPick", player: playerToPick, captain: pickingCaptain };
       try {
         const response = await fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" } });
-        const data = await response.json();
+        const text = await response.text();
         
+        if (text.startsWith("<")) {
+          alert("Server busy processing pick. Syncing board...");
+          await fetchDraftData();
+          return;
+        }
+
+        const data = JSON.parse(text);
         if (data.error) {
           alert("Pick Error: " + data.error);
-          await fetchDraftData(); // Re-fetch on error
+          await fetchDraftData();
         } else {
-          draftState = data; // Sync with server state
+          draftState = data;
           renderDraftBoard();
         }
       } catch (err) { 
