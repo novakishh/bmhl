@@ -65,6 +65,17 @@
       text-transform: uppercase;
     }
 
+    .identity-banner {
+      background-color: #28a745;
+      color: white;
+      font-family: 'Anton', sans-serif;
+      width: 100%;
+      text-align: center;
+      padding: 5px;
+      font-size: 1.2rem;
+      display: none;
+    }
+
     /* --- DRAFT BOARD LAYOUT --- */
     .draft-container {
       display: flex;
@@ -141,7 +152,7 @@
 
     .goalie .player-type { color: #007bff; }
 
-    /* Interactive state for unlocked captains */
+    /* Interactive state for unlocked captains whose turn it is */
     .interactive .player-card { cursor: pointer; }
     .interactive .player-card:active { transform: scale(0.97); background-color: #333; }
     .interactive .player-card:hover { border-color: #d1122a; }
@@ -184,7 +195,7 @@
       font-family: 'Anton', sans-serif;
       cursor: pointer;
     }
-    .btn-login.unlocked { background-color: #28a745; }
+    .btn-login.unlocked { background-color: #28a745; display: none; }
 
     /* --- MODALS --- */
     .modal-overlay {
@@ -225,8 +236,15 @@
       border: 2px solid #555;
       background-color: #222;
       color: #fff;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
       box-sizing: border-box;
+      font-family: 'Anton', sans-serif;
+    }
+    
+    select.modal-input {
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
     }
 
     .btn-modal {
@@ -260,6 +278,9 @@
   </style>
 </head>
 <body>
+
+  <!-- IDENTITY BANNER -->
+  <div id="identity-banner" class="identity-banner">LOGGED IN AS: COMMISSIONER</div>
 
   <!-- TOP BAR -->
   <div class="top-bar">
@@ -299,10 +320,18 @@
   <!-- LOGIN MODAL -->
   <div id="login-modal" class="modal-overlay">
     <div class="modal-content">
-      <h2>ENTER PIN</h2>
-      <p style="color: #aaa;">Authorized Captains Only</p>
-      <input type="password" id="pin-input" class="modal-input" placeholder="****" inputmode="numeric" maxlength="4">
-      <button class="btn-modal btn-confirm" onclick="verifyPin()">UNLOCK</button>
+      <h2>UNLOCK DRAFT</h2>
+      
+      <!-- Identity Selection -->
+      <select id="identity-select" class="modal-input">
+        <option value="Commissioner">Commissioner (Admin)</option>
+        <option id="opt-cap1" value="cap1">Captain 1</option>
+        <option id="opt-cap2" value="cap2">Captain 2</option>
+      </select>
+
+      <input type="password" id="pin-input" class="modal-input" placeholder="PIN (****)" inputmode="numeric" maxlength="4">
+      
+      <button class="btn-modal btn-confirm" onclick="verifyPin()">LOGIN</button>
       <button class="btn-modal btn-cancel" onclick="closeModal('login-modal')">CANCEL</button>
     </div>
   </div>
@@ -325,6 +354,8 @@
     const scriptURL = 'https://script.google.com/macros/s/AKfycbyIOR9a1TsTk-NsxccwZdgNxmOPu_w7YWge9aEovUxCFXzWif3xsDQuLfT1DDbklQVm8g/exec';
     
     let isUnlocked = false;
+    let myIdentity = null; // Can be "Commissioner" or the actual string name of the Captain
+    
     let draftState = {
       players: [],
       settings: { cap1: "Team 1", cap2: "Team 2", turn: "Waiting", status: "WAITING" }
@@ -346,7 +377,6 @@
       }
     }
 
-    // Start Polling
     fetchDraftData();
     setInterval(fetchDraftData, 3000);
 
@@ -355,12 +385,28 @@
       const cap1 = draftState.settings.cap1 || "Team 1";
       const cap2 = draftState.settings.cap2 || "Team 2";
       
+      // Update Login Modal Dropdown with actual Captain names
+      document.getElementById('opt-cap1').value = cap1;
+      document.getElementById('opt-cap1').innerText = cap1.toUpperCase();
+      document.getElementById('opt-cap2').value = cap2;
+      document.getElementById('opt-cap2').innerText = cap2.toUpperCase();
+      
       document.getElementById('draft-status').innerText = draftState.settings.status === "LIVE" ? "🔴 LIVE DRAFT" : "DRAFT WAITING";
       
       let turnText = draftState.settings.turn ? draftState.settings.turn.toUpperCase() + "'S TURN" : "WAITING";
       if (draftState.settings.status !== "LIVE") turnText = "DRAFT PAUSED";
+      
+      // If a logged-in captain is viewing, tell them directly if it's their turn
+      if (isUnlocked && myIdentity !== "Commissioner") {
+        if (draftState.settings.turn === myIdentity) {
+          turnText = "👉 YOUR TURN 👈";
+          document.getElementById('turn-display').style.color = "#28a745"; // Green for their turn
+        } else {
+          document.getElementById('turn-display').style.color = "#ffc107"; // Yellow for waiting
+        }
+      }
+      
       document.getElementById('turn-display').innerText = turnText;
-
       document.getElementById('team1-title').innerText = cap1.toUpperCase();
       document.getElementById('team2-title').innerText = cap2.toUpperCase();
 
@@ -372,27 +418,38 @@
       team1Container.innerHTML = "";
       team2Container.innerHTML = "";
 
-      // Sort players: Goalies first, then alphabetical
       let sortedPlayers = draftState.players.sort((a, b) => {
         if (a.type.toLowerCase() === 'goalie' && b.type.toLowerCase() !== 'goalie') return -1;
         if (a.type.toLowerCase() !== 'goalie' && b.type.toLowerCase() === 'goalie') return 1;
         return a.name.localeCompare(b.name);
       });
 
+      // Determine if the currently logged in user is allowed to pick right now
+      let isMyTurn = false;
+      if (isUnlocked && draftState.settings.status === "LIVE") {
+        if (myIdentity === "Commissioner" || myIdentity === draftState.settings.turn) {
+          isMyTurn = true;
+        }
+      }
+
+      // Add/Remove interactive visual class
+      if (isMyTurn) {
+        document.getElementById('available-panel').classList.add('interactive');
+      } else {
+        document.getElementById('available-panel').classList.remove('interactive');
+      }
+
       sortedPlayers.forEach(p => {
-        // Build Card
         if (!p.draftedBy) {
-          // Available Player
           let card = document.createElement('div');
           card.className = `player-card ${p.type.toLowerCase() === 'goalie' ? 'goalie' : ''}`;
           card.innerHTML = `<span>${p.name}</span><span class="player-type">${p.type}</span>`;
           
-          if (isUnlocked && draftState.settings.status === "LIVE") {
+          if (isMyTurn) {
             card.onclick = () => openConfirmModal(p.name);
           }
           availableContainer.appendChild(card);
         } else {
-          // Drafted Player
           let rosterCard = document.createElement('div');
           rosterCard.className = 'roster-card';
           rosterCard.innerHTML = `<span>${p.name}</span> <span class="roster-pick">#${p.pickNum}</span>`;
@@ -408,7 +465,7 @@
 
     // --- LOGIN / UNLOCK LOGIC ---
     function openLogin() {
-      if (isUnlocked) return; // Already unlocked
+      if (isUnlocked) return; 
       document.getElementById('pin-input').value = "";
       document.getElementById('login-modal').style.display = 'flex';
     }
@@ -417,14 +474,17 @@
       const pin = document.getElementById('pin-input').value;
       if (pin === "2026") {
         isUnlocked = true;
+        myIdentity = document.getElementById('identity-select').value;
+        
         closeModal('login-modal');
+        document.getElementById('login-btn').style.display = 'none'; // Hide unlock button
         
-        const btn = document.getElementById('login-btn');
-        btn.innerText = "CAPTAIN MODE ACTIVE";
-        btn.classList.add('unlocked');
+        // Show identity banner at the very top
+        const banner = document.getElementById('identity-banner');
+        banner.style.display = 'block';
+        banner.innerText = `LOGGED IN AS: ${myIdentity.toUpperCase()}`;
         
-        document.getElementById('available-panel').classList.add('interactive');
-        renderDraftBoard(); // Re-render to attach click events
+        renderDraftBoard(); 
       } else {
         alert("Incorrect PIN");
       }
@@ -442,15 +502,16 @@
     async function submitPick() {
       if (!pendingPick) return;
 
-      // Show loader, hide buttons to prevent double click
       document.getElementById('confirm-buttons').style.display = 'none';
       document.getElementById('pick-loader').style.display = 'block';
 
+      // We explicitly send the turn of whoever the sheet thinks is drafting, 
+      // just in case the Commissioner is the one pushing the button.
       const payload = {
         secretToken: "BanhMiHockey2026!",
         type: "draftPick",
         player: pendingPick,
-        captain: draftState.settings.turn // Assuming whoever is clicking is the active captain
+        captain: draftState.settings.turn 
       };
 
       try {
@@ -460,7 +521,6 @@
           headers: { "Content-Type": "text/plain;charset=utf-8" }
         });
         
-        // Immediately fetch updated board
         await fetchDraftData();
         closeModal('confirm-modal');
         pendingPick = null;
