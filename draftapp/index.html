@@ -342,11 +342,11 @@
           <div class="role-badge" id="user-role-display">SPECTATOR MODE</div>
           <div class="header-btn-group">
             <a href="../" class="btn-nav">← STATS</a>
-            <button class="btn-login" id="login-btn" onclick="openLogin()">UNLOCK DRAFT</button>
+            <button class="btn-login" id="login-btn" onclick="openLogin()">Captain Login</button>
           </div>
         </div>
 
-        <!-- COMPACT READY STATUS BAR (HEADER INLINE) -->
+        <!-- COMPACT READY STATUS BAR -->
         <div class="ready-bar" id="ready-bar" style="display: none;">
           <div class="ready-badges-group">
             <div class="ready-status-box" id="lobby-box-c1">
@@ -408,7 +408,7 @@
     <div class="modal-content">
       <h3>CONFIRM PICK</h3>
       <p style="margin: 15px 0; font-size: 1.1rem; color: #ffffff;">Draft <strong id="confirm-player-name" style="color:var(--accent-red);"></strong>?</p>
-      <button class="btn-modal btn-confirm" onclick="submitPick()">YES, DRAFT</button>
+      <button class="btn-modal btn-confirm" id="btn-submit-pick" onclick="submitPick()">YES, DRAFT</button>
       <button class="btn-modal btn-cancel" onclick="closeModal('confirm-modal')">CANCEL</button>
     </div>
   </div>
@@ -425,7 +425,7 @@
     let pendingPick = null;
     let draftState = { players: [], settings: { cap1: "Team 1", cap2: "Team 2", turn: "", status: "WAITING", cap1Ready: false, cap2Ready: false } };
 
-    // Remove splash screen overlay after full animation completes
+    // Remove splash screen overlay after animation
     setTimeout(() => {
       const splash = document.getElementById('splash-screen');
       if (splash) splash.style.display = 'none';
@@ -465,9 +465,13 @@
       document.getElementById('tab-btn-team1').innerText = cap1.toUpperCase();
       document.getElementById('tab-btn-team2').innerText = cap2.toUpperCase();
 
-      // --- INLINE READY BAR / PRE-DRAFT STATUS ---
+      const currentStatus = (draftState.settings.status || "").trim().toUpperCase();
+      const currentTurn = (draftState.settings.turn || "").trim().toLowerCase();
+      const myName = (myIdentity || "").trim().toLowerCase();
+
+      // --- READY BAR LOGIC ---
       const readyBar = document.getElementById('ready-bar');
-      if (draftState.settings.status !== "LIVE") {
+      if (currentStatus !== "LIVE") {
         readyBar.style.display = "flex";
         document.getElementById('draft-status').innerText = "PRE-DRAFT LOBBY";
         document.getElementById('turn-display').innerText = "WAITING ON CAPTAINS";
@@ -482,9 +486,9 @@
         document.getElementById('lobby-box-c2').className = draftState.settings.cap2Ready ? "ready-status-box is-ready" : "ready-status-box";
 
         const btnReady = document.getElementById('btn-ready-up');
-        if (isUnlocked && myIdentity === cap1 && !draftState.settings.cap1Ready) {
+        if (isUnlocked && myName === cap1.trim().toLowerCase() && !draftState.settings.cap1Ready) {
           btnReady.style.display = "inline-block";
-        } else if (isUnlocked && myIdentity === cap2 && !draftState.settings.cap2Ready) {
+        } else if (isUnlocked && myName === cap2.trim().toLowerCase() && !draftState.settings.cap2Ready) {
           btnReady.style.display = "inline-block";
         } else {
           btnReady.style.display = "none";
@@ -496,7 +500,7 @@
         
         let turnText = draftState.settings.turn ? draftState.settings.turn.toUpperCase() + "'S TURN" : "WAITING";
         if (isUnlocked) {
-          if (draftState.settings.turn === myIdentity) {
+          if (myName === currentTurn && myName !== "") {
             turnText = "👉 YOUR TURN";
             document.getElementById('turn-display').style.color = "var(--accent-green)";
           } else {
@@ -514,7 +518,7 @@
       availableContainer.innerHTML = ""; team1Container.innerHTML = ""; team2Container.innerHTML = "";
       
       let isMyTurn = false;
-      if (isUnlocked && draftState.settings.status === "LIVE" && myIdentity === draftState.settings.turn) {
+      if (isUnlocked && currentStatus === "LIVE" && myName === currentTurn && myName !== "") {
         isMyTurn = true;
       }
 
@@ -554,28 +558,53 @@
 
     // --- API CALLS ---
     async function sendReadyUp() {
-      document.getElementById('btn-ready-up').innerText = "CONFIRMING...";
+      const btn = document.getElementById('btn-ready-up');
+      btn.innerText = "CONFIRMING...";
       const payload = { secretToken: "BanhMiHockey2026!", type: "readyUp", captain: myIdentity };
       try {
-        await fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" } });
+        const response = await fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" } });
+        const resText = await response.text();
+        if (resText.includes("Error") || resText.includes("Denied")) {
+          alert("Ready Up Error: " + resText);
+        }
         await fetchDraftData();
-      } catch (err) { alert("Error sending ready status."); document.getElementById('btn-ready-up').innerText = "I AM READY"; }
+      } catch (err) { 
+        alert("Error sending ready status: " + err.message); 
+      } finally {
+        btn.innerText = "I AM READY";
+      }
     }
 
     async function submitPick() {
       if (!pendingPick) return;
+      const submitBtn = document.getElementById('btn-submit-pick');
+      submitBtn.innerText = "SUBMITTING...";
+      submitBtn.disabled = true;
+
       const payload = { secretToken: "BanhMiHockey2026!", type: "draftPick", player: pendingPick, captain: draftState.settings.turn };
       try {
-        await fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" } });
-        await fetchDraftData();
+        const response = await fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" } });
+        const resText = await response.text();
+        
+        if (resText.includes("Error") || resText.includes("Denied")) {
+          alert("Draft Pick Error: " + resText);
+        } else {
+          await fetchDraftData();
+        }
+      } catch (err) { 
+        alert("Network Error submitting pick: " + err.message); 
+      } finally {
+        submitBtn.innerText = "YES, DRAFT";
+        submitBtn.disabled = false;
         closeModal('confirm-modal');
         pendingPick = null;
-      } catch (err) { alert("Error making pick. Please try again."); closeModal('confirm-modal'); }
+      }
     }
 
     // --- UTILS ---
     function openLogin() { if (!isUnlocked) { document.getElementById('pin-input').value = ""; document.getElementById('login-modal').style.display = 'flex'; } }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    function openConfirmModal(playerName) { pendingPick = playerName; document.getElementById('confirm-player-name').innerText = playerName.toUpperCase(); document.getElementById('confirm-modal').style.display = 'flex'; }
     
     function verifyPin() {
       const pin = document.getElementById('pin-input').value.trim();
@@ -584,11 +613,12 @@
       const cap2Name = draftState.settings.cap2 || "cap2";
 
       let isValid = false;
-      if (selectedIdentity === cap1Name && pin === CAP1_PIN) isValid = true;
-      else if (selectedIdentity === cap2Name && pin === CAP2_PIN) isValid = true;
+      if (selectedIdentity.trim().toLowerCase() === cap1Name.trim().toLowerCase() && pin === CAP1_PIN) isValid = true;
+      else if (selectedIdentity.trim().toLowerCase() === cap2Name.trim().toLowerCase() && pin === CAP2_PIN) isValid = true;
 
       if (isValid) {
-        isUnlocked = true; myIdentity = selectedIdentity;
+        isUnlocked = true; 
+        myIdentity = selectedIdentity;
         closeModal('login-modal');
         document.getElementById('login-btn').style.display = 'none';
         
