@@ -177,6 +177,28 @@
     .turn-display { font-size: 1.1rem; font-weight: 800; color: var(--accent-yellow); text-transform: uppercase; }
     .role-badge { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
     .role-badge.logged-in { color: var(--accent-green); }
+
+    .header-btn-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .btn-nav {
+      background-color: transparent;
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: background-color 0.15s;
+    }
+    .btn-nav:hover { background-color: var(--border-color); }
+
     .btn-login { 
       background-color: var(--accent-red); 
       color: #ffffff; 
@@ -281,7 +303,10 @@
         </div>
         <div class="header-row header-controls">
           <div class="role-badge" id="user-role-display">SPECTATOR MODE</div>
-          <button class="btn-login" id="login-btn" onclick="openLogin()">UNLOCK DRAFT</button>
+          <div class="header-btn-group">
+            <a href="../" class="btn-nav">← STATS</a>
+            <button class="btn-login" id="login-btn" onclick="openLogin()">UNLOCK DRAFT</button>
+          </div>
         </div>
       </div>
     </div>
