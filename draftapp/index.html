@@ -57,7 +57,7 @@
       justify-content: center;
       align-items: center;
       pointer-events: none;
-      animation: splashContainerFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) 2.80s forwards;
+      animation: splashContainerFade 0.6s cubic-bezier(0.7, 0, 0.3, 1) 2.2s forwards;
     }
 
     .bmhl-monogram {
@@ -71,18 +71,19 @@
       text-shadow: 5px 5px 0px #d1122a, 10px 10px 0px #000;
       z-index: 2;
       display: flex;
+      animation: monogramZoomThru 0.8s cubic-bezier(0.7, 0, 0.3, 1) 2.0s forwards;
     }
 
     .bmhl-monogram .letter {
       display: inline-block;
       opacity: 0;
-      animation: iceCracken 0.7s cubic-bezier(0.1, 1.2, 0.3, 1) forwards;
+      animation: iceCracken 0.6s cubic-bezier(0.1, 1.2, 0.3, 1) forwards;
     }
 
-    .bmhl-monogram .letter:nth-child(1) { animation-delay: 0.20s; }
-    .bmhl-monogram .letter:nth-child(2) { animation-delay: 0.60s; }
-    .bmhl-monogram .letter:nth-child(3) { animation-delay: 1.00s; }
-    .bmhl-monogram .letter:nth-child(4) { animation-delay: 1.40s; }
+    .bmhl-monogram .letter:nth-child(1) { animation-delay: 0.15s; }
+    .bmhl-monogram .letter:nth-child(2) { animation-delay: 0.45s; }
+    .bmhl-monogram .letter:nth-child(3) { animation-delay: 0.75s; }
+    .bmhl-monogram .letter:nth-child(4) { animation-delay: 1.05s; }
 
     .bmhl-monogram::after {
       content: '';
@@ -96,7 +97,7 @@
       box-shadow: 5px 5px 0px #000;
       z-index: -1;
       opacity: 0;
-      animation: fadeIn 0.4s ease-out 1.90s forwards;
+      animation: fadeIn 0.3s ease-out 1.45s forwards;
     }
 
     @keyframes iceCracken {
@@ -117,15 +118,27 @@
       100% { opacity: 1; }
     }
 
+    /* ZOOM IN THROUGH LOGO (EXACT REPLICA OF EXAMPLE VIDEO) */
+    @keyframes monogramZoomThru {
+      0% {
+        opacity: 1;
+        transform: skewX(-12deg) scale(1);
+        filter: blur(0px);
+      }
+      100% {
+        opacity: 0;
+        transform: skewX(-12deg) scale(14);
+        filter: blur(8px);
+      }
+    }
+
     @keyframes splashContainerFade {
       0% {
         opacity: 1;
-        transform: scale(1);
         visibility: visible;
       }
       100% {
         opacity: 0;
-        transform: scale(1.1);
         visibility: hidden;
       }
     }
@@ -133,7 +146,7 @@
     /* --- PAGE CONTENT FADE IN --- */
     .app-wrapper {
       opacity: 0;
-      animation: appContentFadeIn 0.6s ease-out 2.70s forwards;
+      animation: appContentFadeIn 0.8s ease-out 2.1s forwards;
       display: flex;
       flex-direction: column;
       min-height: 100vh;
@@ -356,11 +369,11 @@
     let pendingPick = null;
     let draftState = { players: [], settings: { cap1: "Team 1", cap2: "Team 2", turn: "", status: "WAITING", cap1Ready: false, cap2Ready: false } };
 
-    // Remove splash overlay after animation completes
+    // Remove splash screen from DOM after animation finishes
     setTimeout(() => {
       const splash = document.getElementById('splash-screen');
       if (splash) splash.style.display = 'none';
-    }, 3400);
+    }, 2900);
 
     function switchTab(tab) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
