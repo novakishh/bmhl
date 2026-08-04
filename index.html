@@ -4,15 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>BMHL - Banh Mi Hockey League</title>
+  <title>BMHL - Stats Central</title>
 
   <!-- Open Graph Meta Tags -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://novakishh.github.io/bmhl/">
-  <meta property="og:title" content="BMHL - Banh Mi Hockey League">
+  <meta property="og:title" content="BMHL - Stats Central">
   <meta property="og:description" content="Stats, standings, and game recaps for the BMHL. It's in the game!">
-  
-  <!-- Updated Image Link with new repo name -->
   <meta property="og:image" content="https://novakishh.github.io/bmhl/bmhl-preview.png">
 
   <!-- Favicon -->
@@ -26,20 +24,60 @@
       height: 100%;
       overflow: hidden;
       background-color: #0f172a;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
+
     iframe {
       width: 100%;
       height: 100%;
       border: none;
       display: block;
     }
+
+    /* Floating Draft App Link Button */
+    .draft-nav-overlay {
+      position: fixed;
+      top: 12px;
+      right: 16px;
+      z-index: 9999;
+    }
+
+    .btn-draft-link {
+      background-color: #d1122a;
+      color: #ffffff;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid #333333;
+      transition: background-color 0.15s, transform 0.15s;
+    }
+
+    .btn-draft-link:hover {
+      background-color: #ff1a35;
+      transform: translateY(-2px);
+    }
   </style>
 </head>
 <body>
+
+  <!-- FLOATING DRAFT LINK OVERLAY -->
+  <div class="draft-nav-overlay">
+    <a href="./draftapp/" class="btn-draft-link">🔴 LIVE DRAFT BOARD</a>
+  </div>
+
   <iframe 
     src="https://script.google.com/macros/s/AKfycbyIOR9a1TsTk-NsxccwZdgNxmOPu_w7YWge9aEovUxCFXzWif3xsDQuLfT1DDbklQVm8g/exec" 
     allow="geolocation; microphone; camera"
     sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts">
   </iframe>
+
 </body>
 </html>
