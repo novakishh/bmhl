@@ -118,7 +118,6 @@
       100% { opacity: 1; }
     }
 
-    /* ZOOM IN THROUGH LOGO */
     @keyframes monogramZoomThru {
       0% {
         opacity: 1;
@@ -212,6 +211,59 @@
     }
     .btn-login:hover { background-color: #ff1a35; }
 
+    /* --- INLINE READY STATUS BAR --- */
+    .ready-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding-top: 6px;
+      border-top: 1px solid var(--border-color);
+      flex-wrap: wrap;
+    }
+
+    .ready-badges-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .ready-status-box {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 4px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .ready-status-box.is-ready {
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+      background: rgba(40, 167, 69, 0.1);
+    }
+
+    .btn-ready-up-sm {
+      background-color: var(--accent-green);
+      color: #ffffff;
+      border: none;
+      padding: 5px 12px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      cursor: pointer;
+      text-transform: uppercase;
+      display: none;
+      transition: background-color 0.15s;
+    }
+    .btn-ready-up-sm:hover { background-color: #218838; }
+
     /* --- MOBILE TABS --- */
     .mobile-tabs {
       display: flex; background-color: #000000; border-bottom: 1px solid var(--border-color);
@@ -241,21 +293,6 @@
     @media screen and (max-width: 767px) and (orientation: portrait) { .panel { display: none; } .panel.active-tab { display: flex; } }
     .panel-title { font-size: 0.95rem; font-weight: 700; color: #ffffff; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
     .count-badge { background-color: var(--accent-red); color: #ffffff; font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; font-weight: 700; }
-
-    /* --- PRE-DRAFT LOBBY OVERLAY (TOP ALIGNED) --- */
-    .lobby-overlay {
-      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(10, 10, 10, 0.98); z-index: 50;
-      display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-      gap: 16px; text-align: center; padding: 30px 20px;
-      overflow-y: auto;
-    }
-    .lobby-title { font-size: 1.8rem; font-weight: 800; color: #ffffff; margin-bottom: 5px; }
-    .ready-status-box { background: var(--bg-card); border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; width: 100%; max-width: 350px; font-size: 1.1rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
-    .ready-status-box.is-ready { border-color: var(--accent-green); background-color: rgba(40, 167, 69, 0.1); }
-    .status-icon { font-size: 1.5rem; }
-    .btn-ready-up { background-color: var(--accent-red); color: #ffffff; font-size: 1.2rem; font-weight: 800; padding: 15px 30px; border: none; border-radius: 8px; margin-top: 10px; cursor: pointer; width: 100%; max-width: 350px; text-transform: uppercase; display: none; }
-    .btn-ready-up:active { transform: scale(0.98); }
 
     /* --- PLAYER LISTS --- */
     .player-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; flex: 1; padding-right: 4px; }
@@ -305,8 +342,21 @@
           <div class="role-badge" id="user-role-display">SPECTATOR MODE</div>
           <div class="header-btn-group">
             <a href="../" class="btn-nav">← STATS</a>
-            <button class="btn-login" id="login-btn" onclick="openLogin()">Captain Login</button>
+            <button class="btn-login" id="login-btn" onclick="openLogin()">UNLOCK DRAFT</button>
           </div>
+        </div>
+
+        <!-- COMPACT READY STATUS BAR (HEADER INLINE) -->
+        <div class="ready-bar" id="ready-bar" style="display: none;">
+          <div class="ready-badges-group">
+            <div class="ready-status-box" id="lobby-box-c1">
+              <span id="lobby-name-c1">CAPTAIN 1</span>: <span id="lobby-icon-c1">⏳ NOT READY</span>
+            </div>
+            <div class="ready-status-box" id="lobby-box-c2">
+              <span id="lobby-name-c2">CAPTAIN 2</span>: <span id="lobby-icon-c2">⏳ NOT READY</span>
+            </div>
+          </div>
+          <button class="btn-ready-up-sm" id="btn-ready-up" onclick="sendReadyUp()">I AM READY</button>
         </div>
       </div>
     </div>
@@ -320,25 +370,6 @@
 
     <!-- MAIN WRAPPER -->
     <div class="main-wrapper">
-      
-      <!-- PRE-DRAFT LOBBY OVERLAY -->
-      <div id="lobby-overlay" class="lobby-overlay" style="display: none;">
-        <div class="lobby-title">PRE-DRAFT LOBBY</div>
-        <p style="color: var(--text-muted); margin-bottom: 10px;">Waiting for captains to ready up...</p>
-        
-        <div class="ready-status-box" id="lobby-box-c1">
-          <span id="lobby-name-c1">CAPTAIN 1</span>
-          <span class="status-icon" id="lobby-icon-c1">⏳</span>
-        </div>
-        
-        <div class="ready-status-box" id="lobby-box-c2">
-          <span id="lobby-name-c2">CAPTAIN 2</span>
-          <span class="status-icon" id="lobby-icon-c2">⏳</span>
-        </div>
-
-        <button class="btn-ready-up" id="btn-ready-up" onclick="sendReadyUp()">I AM READY</button>
-      </div>
-
       <!-- DRAFT BOARD -->
       <div class="draft-container">
         <div class="panel" id="panel-team1">
@@ -394,7 +425,7 @@
     let pendingPick = null;
     let draftState = { players: [], settings: { cap1: "Team 1", cap2: "Team 2", turn: "", status: "WAITING", cap1Ready: false, cap2Ready: false } };
 
-    // Remove splash screen overlay after full extended animation completes
+    // Remove splash screen overlay after full animation completes
     setTimeout(() => {
       const splash = document.getElementById('splash-screen');
       if (splash) splash.style.display = 'none';
@@ -434,33 +465,33 @@
       document.getElementById('tab-btn-team1').innerText = cap1.toUpperCase();
       document.getElementById('tab-btn-team2').innerText = cap2.toUpperCase();
 
-      // --- LOBBY LOGIC ---
-      const lobbyOverlay = document.getElementById('lobby-overlay');
+      // --- INLINE READY BAR / PRE-DRAFT STATUS ---
+      const readyBar = document.getElementById('ready-bar');
       if (draftState.settings.status !== "LIVE") {
-        lobbyOverlay.style.display = "flex";
+        readyBar.style.display = "flex";
         document.getElementById('draft-status').innerText = "PRE-DRAFT LOBBY";
         document.getElementById('turn-display').innerText = "WAITING ON CAPTAINS";
 
         document.getElementById('lobby-name-c1').innerText = cap1.toUpperCase();
         document.getElementById('lobby-name-c2').innerText = cap2.toUpperCase();
         
-        document.getElementById('lobby-icon-c1').innerText = draftState.settings.cap1Ready ? "✅" : "⏳";
+        document.getElementById('lobby-icon-c1').innerText = draftState.settings.cap1Ready ? "✅ READY" : "⏳ NOT READY";
         document.getElementById('lobby-box-c1').className = draftState.settings.cap1Ready ? "ready-status-box is-ready" : "ready-status-box";
         
-        document.getElementById('lobby-icon-c2').innerText = draftState.settings.cap2Ready ? "✅" : "⏳";
+        document.getElementById('lobby-icon-c2').innerText = draftState.settings.cap2Ready ? "✅ READY" : "⏳ NOT READY";
         document.getElementById('lobby-box-c2').className = draftState.settings.cap2Ready ? "ready-status-box is-ready" : "ready-status-box";
 
         const btnReady = document.getElementById('btn-ready-up');
         if (isUnlocked && myIdentity === cap1 && !draftState.settings.cap1Ready) {
-          btnReady.style.display = "block";
+          btnReady.style.display = "inline-block";
         } else if (isUnlocked && myIdentity === cap2 && !draftState.settings.cap2Ready) {
-          btnReady.style.display = "block";
+          btnReady.style.display = "inline-block";
         } else {
           btnReady.style.display = "none";
         }
       } else {
         // LIVE DRAFT
-        lobbyOverlay.style.display = "none";
+        readyBar.style.display = "none";
         document.getElementById('draft-status').innerText = "🔴 LIVE DRAFT";
         
         let turnText = draftState.settings.turn ? draftState.settings.turn.toUpperCase() + "'S TURN" : "WAITING";
