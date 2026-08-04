@@ -19,9 +19,6 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="BMHL Draft">
 
-  <!-- Jitsi API Embed -->
-  <script src="https://meet.jit.si/external_api.js"></script>
-
   <style>
     :root {
       --bg-main: #0e1015;
@@ -58,8 +55,8 @@
     .top-bar {
       background-color: #000;
       border-bottom: 2px solid var(--border-color);
-      padding: 10px 15px;
-      padding-top: max(env(safe-area-inset-top), 10px);
+      padding: 12px 16px;
+      padding-top: max(env(safe-area-inset-top), 12px);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -67,7 +64,7 @@
     }
 
     .status-badge {
-      font-size: 0.75rem;
+      font-size: 0.8rem;
       font-weight: 700;
       letter-spacing: 0.5px;
       color: var(--text-muted);
@@ -75,7 +72,7 @@
     }
 
     .turn-display {
-      font-size: 1.1rem;
+      font-size: 1.15rem;
       font-weight: 800;
       color: var(--accent-yellow);
       text-transform: uppercase;
@@ -94,48 +91,6 @@
       display: none;
     }
 
-    /* --- VIDEO STREAM SECTION --- */
-    .video-section {
-      background-color: #000;
-      border-bottom: 2px solid var(--border-color);
-      width: 100%;
-      flex-shrink: 0;
-    }
-
-    .video-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 6px 12px;
-      background-color: #12141c;
-      border-bottom: 1px solid var(--border-color);
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--text-muted);
-    }
-
-    .btn-toggle-video {
-      background: none;
-      border: none;
-      color: var(--accent-red);
-      font-weight: 700;
-      font-size: 0.8rem;
-      cursor: pointer;
-      padding: 2px 6px;
-    }
-
-    #jitsi-container {
-      width: 100%;
-      height: 180px;
-      background-color: #000;
-    }
-
-    @media screen and (min-width: 768px) {
-      #jitsi-container {
-        height: 240px;
-      }
-    }
-
     /* --- MOBILE TAB BAR --- */
     .mobile-tabs {
       display: flex;
@@ -146,7 +101,7 @@
 
     .tab-btn {
       flex: 1;
-      padding: 10px 5px;
+      padding: 12px 5px;
       background: none;
       border: none;
       color: var(--text-muted);
@@ -169,7 +124,7 @@
       flex-direction: column;
       flex-grow: 1;
       overflow: hidden;
-      padding: 10px;
+      padding: 12px;
     }
 
     @media screen and (min-width: 768px) {
@@ -189,14 +144,14 @@
       background-color: var(--bg-panel);
       border: 1px solid var(--border-color);
       border-radius: 8px;
-      padding: 12px;
+      padding: 14px;
       display: flex;
       flex-direction: column;
       height: 100%;
       overflow: hidden;
     }
 
-    /* On mobile, control visibility via active tab */
+    /* On mobile, control panel visibility via active tab */
     @media screen and (max-width: 767px) {
       .panel { display: none; }
       .panel.active-tab { display: flex; }
@@ -208,7 +163,7 @@
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin: 0 0 10px 0;
+      margin: 0 0 12px 0;
       padding-bottom: 8px;
       border-bottom: 1px solid var(--border-color);
       display: flex;
@@ -228,7 +183,7 @@
     .player-list {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 8px;
       overflow-y: auto;
       flex-grow: 1;
       padding-right: 2px;
@@ -237,7 +192,7 @@
     .player-card {
       background-color: var(--bg-card);
       border: 1px solid var(--border-color);
-      padding: 10px 12px;
+      padding: 12px 14px;
       border-radius: 6px;
       font-size: 0.95rem;
       font-weight: 600;
@@ -261,7 +216,7 @@
       color: #66b0ff;
     }
 
-    /* Interactive mode for captain turn */
+    /* Interactive mode when active captain clicks */
     .interactive .player-card {
       cursor: pointer;
       border-color: rgba(209, 18, 42, 0.4);
@@ -275,7 +230,7 @@
     .roster-card {
       background-color: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--border-color);
-      padding: 8px 12px;
+      padding: 10px 14px;
       border-radius: 6px;
       font-size: 0.9rem;
       font-weight: 600;
@@ -294,8 +249,8 @@
     .footer-bar {
       background-color: #000;
       border-top: 1px solid var(--border-color);
-      padding: 8px 15px;
-      padding-bottom: calc(env(safe-area-inset-bottom, 8px) + 8px);
+      padding: 10px 16px;
+      padding-bottom: calc(env(safe-area-inset-bottom, 10px) + 10px);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -308,7 +263,7 @@
       background-color: var(--bg-card);
       color: var(--text-main);
       border: 1px solid var(--border-color);
-      padding: 6px 12px;
+      padding: 6px 14px;
       border-radius: 4px;
       font-size: 0.8rem;
       font-weight: 600;
@@ -379,15 +334,6 @@
   <div class="top-bar">
     <div class="status-badge" id="draft-status">CONNECTING...</div>
     <div class="turn-display" id="turn-display">LOADING</div>
-  </div>
-
-  <!-- EMBEDDED VIDEO CALL -->
-  <div class="video-section">
-    <div class="video-header">
-      <span>🎥 LIVE DRAFT CALL</span>
-      <button class="btn-toggle-video" onclick="toggleVideo()">HIDE / SHOW</button>
-    </div>
-    <div id="jitsi-container"></div>
   </div>
 
   <!-- MOBILE TABS -->
@@ -465,51 +411,12 @@
     
     let isUnlocked = false;
     let myIdentity = "Spectator";
-    let jitsiApi = null;
     
     let draftState = {
       players: [],
       settings: { cap1: "Team 1", cap2: "Team 2", turn: "Waiting", status: "WAITING" }
     };
     let pendingPick = null;
-
-    // --- EMBEDDED JITSI INLINE VIDEO CALL ---
-    function initJitsiCall(displayName, startMuted) {
-      const domain = "meet.jit.si";
-      const roomName = "BMHL_Draft_Room_2026_Live_Official"; 
-      
-      const options = {
-        roomName: roomName,
-        width: "100%",
-        height: "100%",
-        parentNode: document.querySelector('#jitsi-container'),
-        userInfo: { displayName: displayName },
-        configOverwrite: {
-          startWithAudioMuted: startMuted,
-          startWithVideoMuted: startMuted,
-          prejoinPageEnabled: false,
-          disableDeepLinking: true
-        },
-        interfaceConfigOverwrite: {
-          TOOLBAR_BUTTONS: ['microphone', 'camera', 'tileview'],
-          SHOW_JITSI_WATERMARK: false
-        }
-      };
-
-      if (jitsiApi) {
-        jitsiApi.dispose();
-      }
-
-      jitsiApi = new JitsiMeetExternalAPI(domain, options);
-    }
-
-    function toggleVideo() {
-      const el = document.getElementById('jitsi-container');
-      el.style.display = (el.style.display === "none") ? "block" : "none";
-    }
-
-    // Initialize Video in Muted Mode
-    initJitsiCall("Spectator", true);
 
     // --- MOBILE TABS NAVIGATION ---
     function switchTab(tab) {
@@ -660,7 +567,6 @@
         banner.innerText = `LOGGED IN AS: ${myIdentity.toUpperCase()}`;
         document.getElementById('user-role-display').innerText = myIdentity.toUpperCase();
 
-        initJitsiCall(myIdentity, false);
         renderDraftBoard(); 
       } else {
         alert("Incorrect PIN");
