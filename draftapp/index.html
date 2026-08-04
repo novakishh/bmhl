@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  
+  <title>BMHL - Live Draft</title>
+
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://novakishh.github.io/bmhl/draftapp/">
+  <meta property="og:title" content="BMHL - Live Draft Board">
+  <meta property="og:description" content="Watch the BMHL draft live as captains make their picks!">
+  <meta property="og:image" content="https://novakishh.github.io/bmhl/bmhl-preview.png">
+
+  <!-- PWA META TAGS -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="BMHL Draft">
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
+
+    body {
+      background-color: #111;
+      color: white;
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* --- TOP BAR --- */
+    .top-bar {
+      background-color: #000;
+      border-bottom: 4px solid #d1122a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 15px 10px;
+      padding-top: max(env(safe-area-inset-top), 15px);
+      flex-shrink: 0;
+      z-index: 100;
+      text-align: center;
+    }
+
+    .draft-title {
+      font-family: 'Anton', sans-serif;
+      font-size: 1.5rem;
+      color: #666;
+      margin: 0;
+      line-height: 1;
+    }
+
+    .turn-indicator {
+      font-family: 'Anton', sans-serif;
+      font-size: 3rem;
+      color: #ffc107;
+      margin: 5px 0 0 0;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+
+    /* --- DRAFT BOARD LAYOUT --- */
+    .draft-container {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 10px;
+      gap: 15px;
+    }
+
+    @media screen and (min-width: 768px) {
+      .draft-container {
+        flex-direction: row;
+        overflow-y: hidden;
+      }
+      .panel {
+        overflow-y: auto;
+        height: 100%;
+      }
+      .center-panel { flex: 2; }
+      .side-panel { flex: 1; }
+    }
+
+    .panel {
+      background-color: #1a1a1a;
+      border: 2px solid #333;
+      border-radius: 12px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-title {
+      font-family: 'Anton', sans-serif;
+      font-size: 1.8rem;
+      color: #fff;
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #333;
+      padding-bottom: 10px;
+    }
+
+    /* --- PLAYER LISTS --- */
+    .player-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .player-card {
+      background-color: #222;
+      border: 2px solid #444;
+      padding: 12px 15px;
+      border-radius: 8px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: transform 0.1s;
+    }
+
+    .player-card.goalie {
+      border-color: #007bff;
+    }
+
+    .player-type {
+      font-size: 0.8rem;
+      color: #aaa;
+      text-transform: uppercase;
+      font-family: 'Anton', sans-serif;
+    }
+
+    .goalie .player-type { color: #007bff; }
+
+    /* Interactive state for unlocked captains */
+    .interactive .player-card { cursor: pointer; }
+    .interactive .player-card:active { transform: scale(0.97); background-color: #333; }
+    .interactive .player-card:hover { border-color: #d1122a; }
+
+    /* Roster Cards */
+    .roster-card {
+      background-color: #333;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 5px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+    }
+    .roster-pick {
+      color: #888;
+      font-family: 'Anton', sans-serif;
+    }
+
+    /* --- FOOTER & LOGIN --- */
+    .footer-bar {
+      background-color: #000;
+      border-top: 2px solid #333;
+      padding: 12px 15px;
+      padding-bottom: calc(env(safe-area-inset-bottom, 15px) + 12px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'Anton', sans-serif;
+      font-size: 1rem;
+      color: #666;
+    }
+
+    .btn-login {
+      background-color: #444;
+      color: #fff;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      font-family: 'Anton', sans-serif;
+      cursor: pointer;
+    }
+    .btn-login.unlocked { background-color: #28a745; }
+
+    /* --- MODALS --- */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .modal-content {
+      background: #111;
+      padding: 30px 20px;
+      border-radius: 15px;
+      border: 2px solid #333;
+      text-align: center;
+      width: 100%;
+      max-width: 350px;
+    }
+
+    .modal-content h2 {
+      font-family: 'Anton', sans-serif;
+      color: #fff;
+      font-size: 2rem;
+      margin: 0 0 10px 0;
+    }
+
+    .modal-input {
+      width: 100%;
+      padding: 15px;
+      font-size: 1.5rem;
+      text-align: center;
+      border-radius: 8px;
+      border: 2px solid #555;
+      background-color: #222;
+      color: #fff;
+      margin-bottom: 20px;
+      box-sizing: border-box;
+    }
+
+    .btn-modal {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 15px;
+      font-family: 'Anton', sans-serif;
+      font-size: 1.2rem;
+      border-radius: 8px;
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
+
+    .btn-confirm { background-color: #d1122a; }
+    .btn-cancel { background-color: #444; }
+
+    /* Spinner */
+    .loader {
+      border: 6px solid #222;
+      border-top: 6px solid #d1122a;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+      display: none;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="draft-title" id="draft-status">CONNECTING...</div>
+    <div class="turn-indicator" id="turn-display">WAITING FOR DATA</div>
+  </div>
+
+  <!-- DRAFT BOARD -->
+  <div class="draft-container">
+    
+    <!-- LEFT PANEL: CAPTAIN 1 ROSTER -->
+    <div class="panel side-panel">
+      <h2 class="panel-title" id="team1-title">TEAM 1</h2>
+      <div class="player-list" id="team1-roster"></div>
+    </div>
+
+    <!-- CENTER PANEL: AVAILABLE PLAYERS -->
+    <div class="panel center-panel" id="available-panel">
+      <h2 class="panel-title">AVAILABLE PLAYERS</h2>
+      <div class="player-list" id="available-players"></div>
+    </div>
+
+    <!-- RIGHT PANEL: CAPTAIN 2 ROSTER -->
+    <div class="panel side-panel">
+      <h2 class="panel-title" id="team2-title">TEAM 2</h2>
+      <div class="player-list" id="team2-roster"></div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer-bar">
+    <div>SPECTATOR MODE</div>
+    <button class="btn-login" id="login-btn" onclick="openLogin()">UNLOCK DRAFT</button>
+  </div>
+
+  <!-- LOGIN MODAL -->
+  <div id="login-modal" class="modal-overlay">
+    <div class="modal-content">
+      <h2>ENTER PIN</h2>
+      <p style="color: #aaa;">Authorized Captains Only</p>
+      <input type="password" id="pin-input" class="modal-input" placeholder="****" inputmode="numeric" maxlength="4">
+      <button class="btn-modal btn-confirm" onclick="verifyPin()">UNLOCK</button>
+      <button class="btn-modal btn-cancel" onclick="closeModal('login-modal')">CANCEL</button>
+    </div>
+  </div>
+
+  <!-- CONFIRM PICK MODAL -->
+  <div id="confirm-modal" class="modal-overlay">
+    <div class="modal-content">
+      <h2>CONFIRM PICK</h2>
+      <p style="font-size: 1.2rem;">Draft <strong id="confirm-player-name" style="color:#d1122a;"></strong>?</p>
+      <div class="loader" id="pick-loader"></div>
+      <div id="confirm-buttons">
+        <button class="btn-modal btn-confirm" onclick="submitPick()">YES, DRAFT</button>
+        <button class="btn-modal btn-cancel" onclick="closeModal('confirm-modal')">CANCEL</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- APP STATE ---
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyIOR9a1TsTk-NsxccwZdgNxmOPu_w7YWge9aEovUxCFXzWif3xsDQuLfT1DDbklQVm8g/exec';
+    
+    let isUnlocked = false;
+    let draftState = {
+      players: [],
+      settings: { cap1: "Team 1", cap2: "Team 2", turn: "Waiting", status: "WAITING" }
+    };
+    let pendingPick = null;
+
+    // --- FETCH DATA (POLLING EVERY 3 SECONDS) ---
+    async function fetchDraftData() {
+      try {
+        const response = await fetch(scriptURL + "?api=draft");
+        const data = await response.json();
+        
+        if (!data.error) {
+          draftState = data;
+          renderDraftBoard();
+        }
+      } catch (err) {
+        console.error("Failed to fetch draft data", err);
+      }
+    }
+
+    // Start Polling
+    fetchDraftData();
+    setInterval(fetchDraftData, 3000);
+
+    // --- RENDER UI ---
+    function renderDraftBoard() {
+      const cap1 = draftState.settings.cap1 || "Team 1";
+      const cap2 = draftState.settings.cap2 || "Team 2";
+      
+      document.getElementById('draft-status').innerText = draftState.settings.status === "LIVE" ? "🔴 LIVE DRAFT" : "DRAFT WAITING";
+      
+      let turnText = draftState.settings.turn ? draftState.settings.turn.toUpperCase() + "'S TURN" : "WAITING";
+      if (draftState.settings.status !== "LIVE") turnText = "DRAFT PAUSED";
+      document.getElementById('turn-display').innerText = turnText;
+
+      document.getElementById('team1-title').innerText = cap1.toUpperCase();
+      document.getElementById('team2-title').innerText = cap2.toUpperCase();
+
+      const availableContainer = document.getElementById('available-players');
+      const team1Container = document.getElementById('team1-roster');
+      const team2Container = document.getElementById('team2-roster');
+
+      availableContainer.innerHTML = "";
+      team1Container.innerHTML = "";
+      team2Container.innerHTML = "";
+
+      // Sort players: Goalies first, then alphabetical
+      let sortedPlayers = draftState.players.sort((a, b) => {
+        if (a.type.toLowerCase() === 'goalie' && b.type.toLowerCase() !== 'goalie') return -1;
+        if (a.type.toLowerCase() !== 'goalie' && b.type.toLowerCase() === 'goalie') return 1;
+        return a.name.localeCompare(b.name);
+      });
+
+      sortedPlayers.forEach(p => {
+        // Build Card
+        if (!p.draftedBy) {
+          // Available Player
+          let card = document.createElement('div');
+          card.className = `player-card ${p.type.toLowerCase() === 'goalie' ? 'goalie' : ''}`;
+          card.innerHTML = `<span>${p.name}</span><span class="player-type">${p.type}</span>`;
+          
+          if (isUnlocked && draftState.settings.status === "LIVE") {
+            card.onclick = () => openConfirmModal(p.name);
+          }
+          availableContainer.appendChild(card);
+        } else {
+          // Drafted Player
+          let rosterCard = document.createElement('div');
+          rosterCard.className = 'roster-card';
+          rosterCard.innerHTML = `<span>${p.name}</span> <span class="roster-pick">#${p.pickNum}</span>`;
+          
+          if (p.draftedBy.toLowerCase() === cap1.toLowerCase()) {
+            team1Container.appendChild(rosterCard);
+          } else if (p.draftedBy.toLowerCase() === cap2.toLowerCase()) {
+            team2Container.appendChild(rosterCard);
+          }
+        }
+      });
+    }
+
+    // --- LOGIN / UNLOCK LOGIC ---
+    function openLogin() {
+      if (isUnlocked) return; // Already unlocked
+      document.getElementById('pin-input').value = "";
+      document.getElementById('login-modal').style.display = 'flex';
+    }
+
+    function verifyPin() {
+      const pin = document.getElementById('pin-input').value;
+      if (pin === "2026") {
+        isUnlocked = true;
+        closeModal('login-modal');
+        
+        const btn = document.getElementById('login-btn');
+        btn.innerText = "CAPTAIN MODE ACTIVE";
+        btn.classList.add('unlocked');
+        
+        document.getElementById('available-panel').classList.add('interactive');
+        renderDraftBoard(); // Re-render to attach click events
+      } else {
+        alert("Incorrect PIN");
+      }
+    }
+
+    // --- DRAFT LOGIC ---
+    function openConfirmModal(playerName) {
+      pendingPick = playerName;
+      document.getElementById('confirm-player-name').innerText = playerName.toUpperCase();
+      document.getElementById('confirm-buttons').style.display = 'block';
+      document.getElementById('pick-loader').style.display = 'none';
+      document.getElementById('confirm-modal').style.display = 'flex';
+    }
+
+    async function submitPick() {
+      if (!pendingPick) return;
+
+      // Show loader, hide buttons to prevent double click
+      document.getElementById('confirm-buttons').style.display = 'none';
+      document.getElementById('pick-loader').style.display = 'block';
+
+      const payload = {
+        secretToken: "BanhMiHockey2026!",
+        type: "draftPick",
+        player: pendingPick,
+        captain: draftState.settings.turn // Assuming whoever is clicking is the active captain
+      };
+
+      try {
+        await fetch(scriptURL, {
+          method: 'POST',
+          body: JSON.stringify(payload),
+          headers: { "Content-Type": "text/plain;charset=utf-8" }
+        });
+        
+        // Immediately fetch updated board
+        await fetchDraftData();
+        closeModal('confirm-modal');
+        pendingPick = null;
+      } catch (err) {
+        alert("Error making pick. Please try again.");
+        closeModal('confirm-modal');
+      }
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+  </script>
+</body>
+</html>
