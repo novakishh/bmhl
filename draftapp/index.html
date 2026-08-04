@@ -29,34 +29,40 @@
 
     * {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     body {
       background-color: var(--bg-main);
       color: var(--text-main);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      margin: 0;
-      padding: 0;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
     }
 
     /* --- TOP HEADER BAR --- */
-    .header-bar {
+    .header-wrapper {
       background-color: #000;
       border-bottom: 2px solid var(--border-color);
-      padding: 12px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
       position: sticky;
       top: 0;
       z-index: 100;
+      width: 100%;
+    }
+
+    .header-bar {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .status-badge {
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       font-weight: 700;
       letter-spacing: 0.5px;
       color: var(--text-muted);
@@ -64,7 +70,7 @@
     }
 
     .turn-display {
-      font-size: 1.1rem;
+      font-size: 1.15rem;
       font-weight: 800;
       color: var(--accent-yellow);
       text-transform: uppercase;
@@ -112,37 +118,71 @@
       background-color: rgba(209, 18, 42, 0.05);
     }
 
-    /* --- DRAFT CONTENT LAYOUT --- */
-    .draft-container {
+    /* --- MAIN DRAFT LAYOUT --- */
+    .main-wrapper {
+      flex: 1;
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto;
       padding: 16px;
-      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
     }
 
-    @media screen and (min-width: 768px) {
+    .draft-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+      flex: 1;
+    }
+
+    /* DESKTOP & LANDSCAPE RESPONSIVE FIXES */
+    @media screen and (min-width: 768px), screen and (orientation: landscape) and (min-width: 568px) {
       .mobile-tabs { display: none; }
-      .draft-container {
-        display: flex;
-        gap: 16px;
-        align-items: flex-start;
+      
+      body {
+        height: 100vh;
+        overflow: hidden;
       }
+
+      .main-wrapper {
+        height: calc(100vh - 110px);
+        overflow: hidden;
+      }
+
+      .draft-container {
+        flex-direction: row;
+        gap: 16px;
+        height: 100%;
+      }
+
       .panel {
         display: flex !important;
         flex: 1;
+        height: 100%;
+        margin-bottom: 0 !important;
       }
-      .panel.center-panel { flex: 1.4; }
+
+      .panel.center-panel {
+        flex: 1.3;
+      }
     }
 
     .panel {
       background-color: var(--bg-panel);
       border: 1px solid var(--border-color);
-      border-radius: 8px;
+      border-radius: 10px;
       padding: 16px;
+      display: flex;
+      flex-direction: column;
       margin-bottom: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
 
-    @media screen and (max-width: 767px) {
+    @media screen and (max-width: 767px) and (orientation: portrait) {
       .panel { display: none; }
-      .panel.active-tab { display: block; }
+      .panel.active-tab { display: flex; }
     }
 
     .panel-title {
@@ -151,12 +191,15 @@
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin: 0 0 12px 0;
-      padding-bottom: 8px;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
       border-bottom: 1px solid var(--border-color);
       display: flex;
+      flex-direction: row;
       justify-content: space-between;
       align-items: center;
+      width: 100%;
+      flex-shrink: 0;
     }
 
     .count-badge {
@@ -167,11 +210,15 @@
       border-radius: 12px;
     }
 
-    /* --- PLAYER CARDS --- */
+    /* --- PLAYER LISTS --- */
     .player-list {
       display: flex;
       flex-direction: column;
       gap: 8px;
+      overflow-y: auto;
+      flex: 1;
+      width: 100%;
+      padding-right: 4px;
     }
 
     .player-card {
@@ -182,8 +229,10 @@
       font-size: 0.95rem;
       font-weight: 600;
       display: flex;
+      flex-direction: row;
       justify-content: space-between;
       align-items: center;
+      width: 100%;
     }
 
     .type-tag {
@@ -201,12 +250,13 @@
       color: #66b0ff;
     }
 
-    /* Interactive mode for logged-in captain's turn */
+    /* Interactive mode when active captain clicks */
     .interactive .player-card {
       cursor: pointer;
       border-color: rgba(209, 18, 42, 0.5);
+      transition: background-color 0.15s, border-color 0.15s;
     }
-    .interactive .player-card:active {
+    .interactive .player-card:hover {
       background-color: #282f3f;
       border-color: var(--accent-red);
     }
@@ -220,9 +270,10 @@
       font-size: 0.9rem;
       font-weight: 600;
       display: flex;
+      flex-direction: row;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
+      width: 100%;
     }
 
     .pick-number {
@@ -235,14 +286,24 @@
     .footer-bar {
       background-color: #000;
       border-top: 1px solid var(--border-color);
-      padding: 16px;
-      padding-bottom: max(16px, env(safe-area-inset-bottom));
+      padding: 12px 20px;
+      padding-bottom: max(12px, env(safe-area-inset-bottom));
       display: flex;
       justify-content: space-between;
       align-items: center;
       font-size: 0.85rem;
       color: var(--text-muted);
-      margin-top: auto;
+      width: 100%;
+      flex-shrink: 0;
+    }
+
+    .footer-content {
+      max-width: 1280px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .btn-login {
@@ -317,9 +378,11 @@
   <div id="identity-banner" class="identity-banner">COMMISSIONER MODE</div>
 
   <!-- HEADER BAR -->
-  <div class="header-bar">
-    <div class="status-badge" id="draft-status">CONNECTING...</div>
-    <div class="turn-display" id="turn-display">LOADING</div>
+  <div class="header-wrapper">
+    <div class="header-bar">
+      <div class="status-badge" id="draft-status">CONNECTING...</div>
+      <div class="turn-display" id="turn-display">LOADING</div>
+    </div>
   </div>
 
   <!-- MOBILE TABS -->
@@ -329,42 +392,46 @@
     <button class="tab-btn" id="tab-btn-team2" onclick="switchTab('team2')">TEAM 2</button>
   </div>
 
-  <!-- DRAFT CONTAINER -->
-  <div class="draft-container">
-    
-    <!-- LEFT PANEL: TEAM 1 -->
-    <div class="panel" id="panel-team1">
-      <div class="panel-title">
-        <span id="team1-title">TEAM 1</span>
-        <span class="count-badge" id="count-team1">0</span>
+  <!-- MAIN WRAPPER -->
+  <div class="main-wrapper">
+    <div class="draft-container">
+      
+      <!-- LEFT PANEL: TEAM 1 -->
+      <div class="panel" id="panel-team1">
+        <div class="panel-title">
+          <span id="team1-title">TEAM 1</span>
+          <span class="count-badge" id="count-team1">0</span>
+        </div>
+        <div class="player-list" id="team1-roster"></div>
       </div>
-      <div class="player-list" id="team1-roster"></div>
-    </div>
 
-    <!-- CENTER PANEL: AVAILABLE PLAYERS -->
-    <div class="panel active-tab" id="panel-available">
-      <div class="panel-title">
-        <span>AVAILABLE PLAYERS</span>
-        <span class="count-badge" id="count-avail">0</span>
+      <!-- CENTER PANEL: AVAILABLE PLAYERS -->
+      <div class="panel center-panel active-tab" id="panel-available">
+        <div class="panel-title">
+          <span>AVAILABLE PLAYERS</span>
+          <span class="count-badge" id="count-avail">0</span>
+        </div>
+        <div class="player-list" id="available-players"></div>
       </div>
-      <div class="player-list" id="available-players"></div>
-    </div>
 
-    <!-- RIGHT PANEL: TEAM 2 -->
-    <div class="panel" id="panel-team2">
-      <div class="panel-title">
-        <span id="team2-title">TEAM 2</span>
-        <span class="count-badge" id="count-team2">0</span>
+      <!-- RIGHT PANEL: TEAM 2 -->
+      <div class="panel" id="panel-team2">
+        <div class="panel-title">
+          <span id="team2-title">TEAM 2</span>
+          <span class="count-badge" id="count-team2">0</span>
+        </div>
+        <div class="player-list" id="team2-roster"></div>
       </div>
-      <div class="player-list" id="team2-roster"></div>
-    </div>
 
+    </div>
   </div>
 
   <!-- FOOTER BAR -->
   <div class="footer-bar">
-    <div id="user-role-display">SPECTATOR MODE</div>
-    <button class="btn-login" id="login-btn" onclick="openLogin()">UNLOCK DRAFT</button>
+    <div class="footer-content">
+      <div id="user-role-display">SPECTATOR MODE</div>
+      <button class="btn-login" id="login-btn" onclick="openLogin()">UNLOCK DRAFT</button>
+    </div>
   </div>
 
   <!-- LOGIN MODAL -->
