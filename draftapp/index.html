@@ -6,13 +6,6 @@
   
   <title>BMHL - Live Draft</title>
 
-  <!-- Open Graph Meta Tags -->
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://novakishh.github.io/bmhl/draftapp/">
-  <meta property="og:title" content="BMHL - Live Draft Board">
-  <meta property="og:description" content="Watch the BMHL draft live as captains make their picks!">
-  <meta property="og:image" content="https://novakishh.github.io/bmhl/bmhl-preview.png">
-
   <style>
     :root {
       --bg-main: #0e1015;
@@ -27,11 +20,7 @@
       --text-muted: #8a94a6;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       background-color: var(--bg-main);
@@ -51,318 +40,79 @@
       z-index: 100;
       width: 100%;
     }
-
     .header-bar {
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 10px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+      max-width: 1280px; margin: 0 auto; padding: 10px 16px;
+      display: flex; flex-direction: column; gap: 8px;
     }
-
-    .header-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-    }
-
-    .header-controls {
-      padding-top: 6px;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .status-badge {
-      font-size: 0.8rem;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      color: var(--text-muted);
-      text-transform: uppercase;
-    }
-
-    .turn-display {
-      font-size: 1.1rem;
-      font-weight: 800;
-      color: var(--accent-yellow);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .role-badge {
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .role-badge.logged-in {
-      color: var(--accent-green);
-    }
-
-    .btn-login {
-      background-color: var(--bg-card);
-      color: var(--text-main);
-      border: 1px solid var(--border-color);
-      padding: 6px 12px;
-      border-radius: 4px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      cursor: pointer;
-      text-transform: uppercase;
-      transition: background-color 0.15s;
-    }
-
-    .btn-login:hover {
-      background-color: var(--border-color);
-    }
+    .header-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+    .header-controls { padding-top: 6px; border-top: 1px solid rgba(255, 255, 255, 0.05); }
+    .status-badge { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+    .turn-display { font-size: 1.1rem; font-weight: 800; color: var(--accent-yellow); text-transform: uppercase; }
+    .role-badge { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+    .role-badge.logged-in { color: var(--accent-green); }
+    .btn-login { background-color: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; cursor: pointer; text-transform: uppercase; }
 
     /* --- MOBILE TABS --- */
     .mobile-tabs {
-      display: flex;
-      background-color: #12141c;
-      border-bottom: 1px solid var(--border-color);
-      position: sticky;
-      top: 68px;
-      z-index: 90;
+      display: flex; background-color: #12141c; border-bottom: 1px solid var(--border-color);
+      position: sticky; top: 68px; z-index: 90;
     }
-
-    .tab-btn {
-      flex: 1;
-      padding: 12px 5px;
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      font-size: 0.85rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      cursor: pointer;
-      border-bottom: 3px solid transparent;
-    }
-
-    .tab-btn.active {
-      color: var(--text-main);
-      border-bottom-color: var(--accent-red);
-      background-color: rgba(209, 18, 42, 0.05);
-    }
+    .tab-btn { flex: 1; padding: 12px 5px; background: none; border: none; color: var(--text-muted); font-size: 0.85rem; font-weight: 700; cursor: pointer; border-bottom: 3px solid transparent; }
+    .tab-btn.active { color: var(--text-main); border-bottom-color: var(--accent-red); background-color: rgba(209, 18, 42, 0.05); }
 
     /* --- MAIN DRAFT LAYOUT --- */
     .main-wrapper {
-      flex: 1;
-      width: 100%;
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
+      flex: 1; width: 100%; max-width: 1280px; margin: 0 auto; padding: 16px;
+      display: flex; flex-direction: column; position: relative;
     }
+    .draft-container { display: flex; flex-direction: column; gap: 16px; width: 100%; flex: 1; }
 
-    .draft-container {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      width: 100%;
-      flex: 1;
-    }
-
-    /* DESKTOP & LANDSCAPE RESPONSIVE FIXES */
     @media screen and (min-width: 768px), screen and (orientation: landscape) and (min-width: 568px) {
       .mobile-tabs { display: none; }
-      
-      body {
-        height: 100vh;
-        overflow: hidden;
-      }
-
-      .main-wrapper {
-        flex: 1;
-        overflow: hidden;
-        height: auto;
-      }
-
-      .draft-container {
-        flex-direction: row;
-        gap: 16px;
-        height: 100%;
-      }
-
-      .panel {
-        display: flex !important;
-        flex: 1;
-        height: 100%;
-        margin-bottom: 0 !important;
-      }
-
-      .panel.center-panel {
-        flex: 1.3;
-      }
+      body { height: 100vh; overflow: hidden; }
+      .main-wrapper { flex: 1; overflow: hidden; height: auto; }
+      .draft-container { flex-direction: row; gap: 16px; height: 100%; }
+      .panel { display: flex !important; flex: 1; height: 100%; margin-bottom: 0 !important; }
+      .panel.center-panel { flex: 1.3; }
     }
 
-    .panel {
-      background-color: var(--bg-panel);
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      margin-bottom: 16px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    }
+    .panel { background-color: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; margin-bottom: 16px; }
+    @media screen and (max-width: 767px) and (orientation: portrait) { .panel { display: none; } .panel.active-tab { display: flex; } }
+    .panel-title { font-size: 0.95rem; font-weight: 700; color: var(--text-muted); margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+    .count-badge { background-color: var(--border-color); color: var(--text-main); font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; }
 
-    @media screen and (max-width: 767px) and (orientation: portrait) {
-      .panel { display: none; }
-      .panel.active-tab { display: flex; }
+    /* --- PRE-DRAFT LOBBY OVERLAY --- */
+    .lobby-overlay {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(14, 16, 21, 0.96); z-index: 50;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 20px; text-align: center; padding: 20px;
     }
-
-    .panel-title {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 12px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid var(--border-color);
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-      flex-shrink: 0;
-    }
-
-    .count-badge {
-      background-color: var(--border-color);
-      color: var(--text-main);
-      font-size: 0.75rem;
-      padding: 2px 8px;
-      border-radius: 12px;
-    }
+    .lobby-title { font-size: 1.8rem; font-weight: 800; color: #fff; margin-bottom: 10px; }
+    .ready-status-box { background: var(--bg-card); border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; width: 100%; max-width: 350px; font-size: 1.1rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+    .ready-status-box.is-ready { border-color: var(--accent-green); }
+    .status-icon { font-size: 1.5rem; }
+    .btn-ready-up { background-color: var(--accent-red); color: white; font-size: 1.2rem; font-weight: 800; padding: 15px 30px; border: none; border-radius: 8px; margin-top: 20px; cursor: pointer; width: 100%; max-width: 350px; text-transform: uppercase; display: none; }
+    .btn-ready-up:active { transform: scale(0.98); }
 
     /* --- PLAYER LISTS --- */
-    .player-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      overflow-y: auto;
-      flex: 1;
-      width: 100%;
-      padding-right: 4px;
-    }
-
-    .player-card {
-      background-color: var(--bg-card);
-      border: 1px solid var(--border-color);
-      padding: 12px 14px;
-      border-radius: 6px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-    }
-
-    .type-tag {
-      font-size: 0.7rem;
-      font-weight: 700;
-      padding: 2px 6px;
-      border-radius: 4px;
-      background-color: rgba(255, 255, 255, 0.08);
-      color: var(--text-muted);
-      text-transform: uppercase;
-    }
-
-    .player-card.goalie .type-tag {
-      background-color: rgba(0, 123, 255, 0.2);
-      color: #66b0ff;
-    }
-
-    /* Interactive mode when active captain clicks */
-    .interactive .player-card {
-      cursor: pointer;
-      border-color: rgba(209, 18, 42, 0.5);
-      transition: background-color 0.15s, border-color 0.15s;
-    }
-    .interactive .player-card:hover {
-      background-color: #282f3f;
-      border-color: var(--accent-red);
-    }
-
-    /* Roster Cards */
-    .roster-card {
-      background-color: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--border-color);
-      padding: 10px 14px;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-    }
-
-    .pick-number {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      font-weight: 700;
-    }
+    .player-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; flex: 1; padding-right: 4px; }
+    .player-card { background-color: var(--bg-card); border: 1px solid var(--border-color); padding: 12px 14px; border-radius: 6px; font-size: 0.95rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+    .type-tag { font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; background-color: rgba(255, 255, 255, 0.08); color: var(--text-muted); }
+    .player-card.goalie .type-tag { background-color: rgba(0, 123, 255, 0.2); color: #66b0ff; }
+    
+    .interactive .player-card { cursor: pointer; border-color: rgba(209, 18, 42, 0.5); }
+    .interactive .player-card:hover { border-color: var(--accent-red); }
+    
+    .roster-card { background-color: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); padding: 10px 14px; border-radius: 6px; font-size: 0.9rem; font-weight: 600; display: flex; justify-content: space-between; }
+    .pick-number { font-size: 0.75rem; color: var(--text-muted); }
 
     /* --- MODALS --- */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.85);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-
-    .modal-content {
-      background: var(--bg-panel);
-      padding: 20px;
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-      text-align: center;
-      width: 100%;
-      max-width: 320px;
-    }
-
-    .modal-content h3 {
-      margin: 0 0 12px 0;
-      font-size: 1.2rem;
-    }
-
-    .modal-input {
-      width: 100%;
-      padding: 12px;
-      font-size: 1rem;
-      text-align: center;
-      border-radius: 6px;
-      border: 1px solid var(--border-color);
-      background-color: var(--bg-main);
-      color: #fff;
-      margin-bottom: 12px;
-    }
-
-    .btn-modal {
-      width: 100%;
-      padding: 12px;
-      font-size: 0.95rem;
-      font-weight: 700;
-      border-radius: 6px;
-      border: none;
-      color: white;
-      cursor: pointer;
-      margin-top: 6px;
-    }
-
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
+    .modal-content { background: var(--bg-panel); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); text-align: center; width: 100%; max-width: 320px; }
+    .modal-content h3 { margin: 0 0 12px 0; font-size: 1.2rem; }
+    .modal-input { width: 100%; padding: 12px; font-size: 1rem; text-align: center; border-radius: 6px; border: 1px solid var(--border-color); background-color: var(--bg-main); color: #fff; margin-bottom: 12px; }
+    .btn-modal { width: 100%; padding: 12px; font-size: 0.95rem; font-weight: 700; border-radius: 6px; border: none; color: white; cursor: pointer; margin-top: 6px; }
     .btn-confirm { background-color: var(--accent-red); }
     .btn-cancel { background-color: #333; }
   </style>
@@ -392,35 +142,39 @@
 
   <!-- MAIN WRAPPER -->
   <div class="main-wrapper">
-    <div class="draft-container">
+    
+    <!-- PRE-DRAFT LOBBY OVERLAY -->
+    <div id="lobby-overlay" class="lobby-overlay" style="display: none;">
+      <div class="lobby-title">PRE-DRAFT LOBBY</div>
+      <p style="color: var(--text-muted); margin-bottom: 20px;">Waiting for captains to ready up...</p>
       
-      <!-- LEFT PANEL: TEAM 1 -->
+      <div class="ready-status-box" id="lobby-box-c1">
+        <span id="lobby-name-c1">CAPTAIN 1</span>
+        <span class="status-icon" id="lobby-icon-c1">⏳</span>
+      </div>
+      
+      <div class="ready-status-box" id="lobby-box-c2">
+        <span id="lobby-name-c2">CAPTAIN 2</span>
+        <span class="status-icon" id="lobby-icon-c2">⏳</span>
+      </div>
+
+      <button class="btn-ready-up" id="btn-ready-up" onclick="sendReadyUp()">I AM READY</button>
+    </div>
+
+    <!-- DRAFT BOARD -->
+    <div class="draft-container">
       <div class="panel" id="panel-team1">
-        <div class="panel-title">
-          <span id="team1-title">TEAM 1</span>
-          <span class="count-badge" id="count-team1">0</span>
-        </div>
+        <div class="panel-title"><span id="team1-title">TEAM 1</span><span class="count-badge" id="count-team1">0</span></div>
         <div class="player-list" id="team1-roster"></div>
       </div>
-
-      <!-- CENTER PANEL: AVAILABLE PLAYERS -->
       <div class="panel center-panel active-tab" id="panel-available">
-        <div class="panel-title">
-          <span>AVAILABLE PLAYERS</span>
-          <span class="count-badge" id="count-avail">0</span>
-        </div>
+        <div class="panel-title"><span>AVAILABLE PLAYERS</span><span class="count-badge" id="count-avail">0</span></div>
         <div class="player-list" id="available-players"></div>
       </div>
-
-      <!-- RIGHT PANEL: TEAM 2 -->
       <div class="panel" id="panel-team2">
-        <div class="panel-title">
-          <span id="team2-title">TEAM 2</span>
-          <span class="count-badge" id="count-team2">0</span>
-        </div>
+        <div class="panel-title"><span id="team2-title">TEAM 2</span><span class="count-badge" id="count-team2">0</span></div>
         <div class="player-list" id="team2-roster"></div>
       </div>
-
     </div>
   </div>
 
@@ -452,90 +206,107 @@
     const scriptURL = 'https://script.google.com/macros/s/AKfycbyIOR9a1TsTk-NsxccwZdgNxmOPu_w7YWge9aEovUxCFXzWif3xsDQuLfT1DDbklQVm8g/exec';
     
     // --- PIN SETTINGS ---
-    const CAP1_PIN = "1111"; // PIN for Captain 1
-    const CAP2_PIN = "2222"; // PIN for Captain 2
+    const CAP1_PIN = "1111"; 
+    const CAP2_PIN = "2222"; 
 
     let isUnlocked = false;
     let myIdentity = "Spectator";
-    
-    let draftState = {
-      players: [],
-      settings: { cap1: "Team 1", cap2: "Team 2", turn: "Waiting", status: "WAITING" }
-    };
     let pendingPick = null;
+    let draftState = { players: [], settings: { cap1: "Team 1", cap2: "Team 2", turn: "", status: "WAITING", cap1Ready: false, cap2Ready: false } };
 
-    // --- MOBILE TAB SWITCHING ---
     function switchTab(tab) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.panel').forEach(p => p.classList.remove('active-tab'));
-
-      if (tab === 'available') {
-        document.getElementById('tab-btn-avail').classList.add('active');
-        document.getElementById('panel-available').classList.add('active-tab');
-      } else if (tab === 'team1') {
-        document.getElementById('tab-btn-team1').classList.add('active');
-        document.getElementById('panel-team1').classList.add('active-tab');
-      } else if (tab === 'team2') {
-        document.getElementById('tab-btn-team2').classList.add('active');
-        document.getElementById('panel-team2').classList.add('active-tab');
-      }
+      if (tab === 'available') { document.getElementById('tab-btn-avail').classList.add('active'); document.getElementById('panel-available').classList.add('active-tab'); } 
+      else if (tab === 'team1') { document.getElementById('tab-btn-team1').classList.add('active'); document.getElementById('panel-team1').classList.add('active-tab'); } 
+      else if (tab === 'team2') { document.getElementById('tab-btn-team2').classList.add('active'); document.getElementById('panel-team2').classList.add('active-tab'); }
     }
 
-    // --- FETCH DATA (POLLING) ---
     async function fetchDraftData() {
       try {
         const response = await fetch(scriptURL + "?api=draft");
         const data = await response.json();
-        
         if (!data.error) {
           draftState = data;
           renderDraftBoard();
         }
-      } catch (err) {
-        console.error("Fetch failed", err);
-      }
+      } catch (err) { console.error("Fetch failed", err); }
     }
 
     fetchDraftData();
     setInterval(fetchDraftData, 3000);
 
-    // --- RENDER DRAFT BOARD ---
     function renderDraftBoard() {
       const cap1 = draftState.settings.cap1 || "Team 1";
       const cap2 = draftState.settings.cap2 || "Team 2";
       
-      document.getElementById('opt-cap1').value = cap1;
-      document.getElementById('opt-cap1').innerText = cap1.toUpperCase();
-      document.getElementById('opt-cap2').value = cap2;
-      document.getElementById('opt-cap2').innerText = cap2.toUpperCase();
+      document.getElementById('opt-cap1').value = cap1; document.getElementById('opt-cap1').innerText = cap1.toUpperCase();
+      document.getElementById('opt-cap2').value = cap2; document.getElementById('opt-cap2').innerText = cap2.toUpperCase();
       
-      document.getElementById('draft-status').innerText = draftState.settings.status === "LIVE" ? "🔴 LIVE DRAFT" : "PAUSED";
-      
-      let turnText = draftState.settings.turn ? draftState.settings.turn.toUpperCase() + "'S TURN" : "WAITING";
-      if (draftState.settings.status !== "LIVE") turnText = "DRAFT PAUSED";
-      
-      if (isUnlocked) {
-        if (draftState.settings.turn === myIdentity) {
-          turnText = "👉 YOUR TURN";
-          document.getElementById('turn-display').style.color = "var(--accent-green)";
-        } else {
-          document.getElementById('turn-display').style.color = "var(--accent-yellow)";
-        }
-      }
-      
-      document.getElementById('turn-display').innerText = turnText;
       document.getElementById('team1-title').innerText = cap1.toUpperCase();
       document.getElementById('team2-title').innerText = cap2.toUpperCase();
       document.getElementById('tab-btn-team1').innerText = cap1.toUpperCase();
       document.getElementById('tab-btn-team2').innerText = cap2.toUpperCase();
 
+      // --- LOBBY LOGIC ---
+      const lobbyOverlay = document.getElementById('lobby-overlay');
+      if (draftState.settings.status !== "LIVE") {
+        lobbyOverlay.style.display = "flex";
+        document.getElementById('draft-status').innerText = "PRE-DRAFT LOBBY";
+        document.getElementById('turn-display').innerText = "WAITING ON CAPTAINS";
+
+        document.getElementById('lobby-name-c1').innerText = cap1.toUpperCase();
+        document.getElementById('lobby-name-c2').innerText = cap2.toUpperCase();
+        
+        // Update Icons & Colors
+        document.getElementById('lobby-icon-c1').innerText = draftState.settings.cap1Ready ? "✅" : "⏳";
+        document.getElementById('lobby-box-c1').className = draftState.settings.cap1Ready ? "ready-status-box is-ready" : "ready-status-box";
+        
+        document.getElementById('lobby-icon-c2').innerText = draftState.settings.cap2Ready ? "✅" : "⏳";
+        document.getElementById('lobby-box-c2').className = draftState.settings.cap2Ready ? "ready-status-box is-ready" : "ready-status-box";
+
+        // Show Ready Button for active captain if they aren't ready
+        const btnReady = document.getElementById('btn-ready-up');
+        if (isUnlocked && myIdentity === cap1 && !draftState.settings.cap1Ready) {
+          btnReady.style.display = "block";
+        } else if (isUnlocked && myIdentity === cap2 && !draftState.settings.cap2Ready) {
+          btnReady.style.display = "block";
+        } else {
+          btnReady.style.display = "none";
+        }
+      } else {
+        // LIVE DRAFT
+        lobbyOverlay.style.display = "none";
+        document.getElementById('draft-status').innerText = "🔴 LIVE DRAFT";
+        
+        let turnText = draftState.settings.turn ? draftState.settings.turn.toUpperCase() + "'S TURN" : "WAITING";
+        if (isUnlocked) {
+          if (draftState.settings.turn === myIdentity) {
+            turnText = "👉 YOUR TURN";
+            document.getElementById('turn-display').style.color = "var(--accent-green)";
+          } else {
+            document.getElementById('turn-display').style.color = "var(--accent-yellow)";
+          }
+        }
+        document.getElementById('turn-display').innerText = turnText;
+      }
+
+      // --- RENDER PLAYERS ---
       const availableContainer = document.getElementById('available-players');
       const team1Container = document.getElementById('team1-roster');
       const team2Container = document.getElementById('team2-roster');
 
-      availableContainer.innerHTML = "";
-      team1Container.innerHTML = "";
-      team2Container.innerHTML = "";
+      availableContainer.innerHTML = ""; team1Container.innerHTML = ""; team2Container.innerHTML = "";
+      
+      let isMyTurn = false;
+      if (isUnlocked && draftState.settings.status === "LIVE" && myIdentity === draftState.settings.turn) {
+        isMyTurn = true;
+      }
+
+      if (isMyTurn) document.getElementById('panel-available').classList.add('interactive');
+      else document.getElementById('panel-available').classList.remove('interactive');
+
+      let countAvail = 0, countT1 = 0, countT2 = 0;
 
       let sortedPlayers = draftState.players.sort((a, b) => {
         if (a.type.toLowerCase() === 'goalie' && b.type.toLowerCase() !== 'goalie') return -1;
@@ -543,46 +314,20 @@
         return a.name.localeCompare(b.name);
       });
 
-      let isMyTurn = false;
-      if (isUnlocked && draftState.settings.status === "LIVE") {
-        if (myIdentity === draftState.settings.turn) {
-          isMyTurn = true;
-        }
-      }
-
-      if (isMyTurn) {
-        document.getElementById('panel-available').classList.add('interactive');
-      } else {
-        document.getElementById('panel-available').classList.remove('interactive');
-      }
-
-      let countAvail = 0;
-      let countT1 = 0;
-      let countT2 = 0;
-
       sortedPlayers.forEach(p => {
         if (!p.draftedBy) {
           countAvail++;
           let card = document.createElement('div');
           card.className = `player-card ${p.type.toLowerCase() === 'goalie' ? 'goalie' : ''}`;
           card.innerHTML = `<span>${p.name}</span><span class="type-tag">${p.type}</span>`;
-          
-          if (isMyTurn) {
-            card.onclick = () => openConfirmModal(p.name);
-          }
+          if (isMyTurn) card.onclick = () => openConfirmModal(p.name);
           availableContainer.appendChild(card);
         } else {
           let rosterCard = document.createElement('div');
           rosterCard.className = 'roster-card';
           rosterCard.innerHTML = `<span>${p.name}</span> <span class="pick-number">#${p.pickNum}</span>`;
-          
-          if (p.draftedBy.toLowerCase() === cap1.toLowerCase()) {
-            countT1++;
-            team1Container.appendChild(rosterCard);
-          } else if (p.draftedBy.toLowerCase() === cap2.toLowerCase()) {
-            countT2++;
-            team2Container.appendChild(rosterCard);
-          }
+          if (p.draftedBy.toLowerCase() === cap1.toLowerCase()) { countT1++; team1Container.appendChild(rosterCard); } 
+          else if (p.draftedBy.toLowerCase() === cap2.toLowerCase()) { countT2++; team2Container.appendChild(rosterCard); }
         }
       });
 
@@ -592,80 +337,51 @@
       document.getElementById('count-team2').innerText = countT2;
     }
 
-    // --- LOGIN / UNLOCK LOGIC ---
-    function openLogin() {
-      if (isUnlocked) return; 
-      document.getElementById('pin-input').value = "";
-      document.getElementById('login-modal').style.display = 'flex';
+    // --- API CALLS ---
+    async function sendReadyUp() {
+      document.getElementById('btn-ready-up').innerText = "CONFIRMING...";
+      const payload = { secretToken: "BanhMiHockey2026!", type: "readyUp", captain: myIdentity };
+      try {
+        await fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" } });
+        await fetchDraftData();
+      } catch (err) { alert("Error sending ready status."); document.getElementById('btn-ready-up').innerText = "I AM READY"; }
     }
 
+    async function submitPick() {
+      if (!pendingPick) return;
+      const payload = { secretToken: "BanhMiHockey2026!", type: "draftPick", player: pendingPick, captain: draftState.settings.turn };
+      try {
+        await fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" } });
+        await fetchDraftData();
+        closeModal('confirm-modal');
+        pendingPick = null;
+      } catch (err) { alert("Error making pick. Please try again."); closeModal('confirm-modal'); }
+    }
+
+    // --- UTILS ---
+    function openLogin() { if (!isUnlocked) { document.getElementById('pin-input').value = ""; document.getElementById('login-modal').style.display = 'flex'; } }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    
     function verifyPin() {
       const pin = document.getElementById('pin-input').value.trim();
       const selectedIdentity = document.getElementById('identity-select').value;
-      
       const cap1Name = draftState.settings.cap1 || "cap1";
       const cap2Name = draftState.settings.cap2 || "cap2";
 
       let isValid = false;
-
-      if (selectedIdentity === cap1Name && pin === CAP1_PIN) {
-        isValid = true;
-      } else if (selectedIdentity === cap2Name && pin === CAP2_PIN) {
-        isValid = true;
-      }
+      if (selectedIdentity === cap1Name && pin === CAP1_PIN) isValid = true;
+      else if (selectedIdentity === cap2Name && pin === CAP2_PIN) isValid = true;
 
       if (isValid) {
-        isUnlocked = true;
-        myIdentity = selectedIdentity;
-        
+        isUnlocked = true; myIdentity = selectedIdentity;
         closeModal('login-modal');
         document.getElementById('login-btn').style.display = 'none';
         
         const roleDisplay = document.getElementById('user-role-display');
         roleDisplay.innerText = `LOGGED IN AS: ${myIdentity.toUpperCase()}`;
         roleDisplay.classList.add('logged-in');
-
         renderDraftBoard(); 
-      } else {
-        alert("Incorrect PIN for selected Captain.");
-      }
-    }
-
-    // --- DRAFT SELECTION LOGIC ---
-    function openConfirmModal(playerName) {
-      pendingPick = playerName;
-      document.getElementById('confirm-player-name').innerText = playerName.toUpperCase();
-      document.getElementById('confirm-modal').style.display = 'flex';
-    }
-
-    async function submitPick() {
-      if (!pendingPick) return;
-
-      const payload = {
-        secretToken: "BanhMiHockey2026!",
-        type: "draftPick",
-        player: pendingPick,
-        captain: draftState.settings.turn 
-      };
-
-      try {
-        await fetch(scriptURL, {
-          method: 'POST',
-          body: JSON.stringify(payload),
-          headers: { "Content-Type": "text/plain;charset=utf-8" }
-        });
-        
-        await fetchDraftData();
-        closeModal('confirm-modal');
-        pendingPick = null;
-      } catch (err) {
-        alert("Error making pick. Please try again.");
-        closeModal('confirm-modal');
-      }
-    }
-
-    function closeModal(id) {
-      document.getElementById(id).style.display = 'none';
+      } else { alert("Incorrect PIN for selected Captain."); }
     }
   </script>
 </body>
