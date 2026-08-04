@@ -533,7 +533,7 @@
   <!-- UNOBTRUSIVE FOOTER WITH TEST TOGGLE -->
   <div class="footer-bar">
     <div>REF COMPANION</div>
-    <button id="mode-toggle-btn" class="mode-toggle" onclick="toggleMode()">🟡 TEST MODE</button>
+    <button id="mode-toggle-btn" class="mode-toggle" onclick="toggleModeClick()">🟡 TEST MODE</button>
     <div>S<span class="display-val" id="season-display"></span> : G<span class="display-val" id="game-display"></span></div>
   </div>
 
@@ -566,6 +566,25 @@
         <button class="btn-so-choice btn-so-miss" onclick="applySoChoice('miss')">X</button>
       </div>
       <button class="btn-so-clear" onclick="applySoChoice('clear')">CLEAR CIRCLE</button>
+    </div>
+  </div>
+
+  <!-- LIVE MODE ERROR MODAL -->
+  <div id="live-error-modal" class="modal-overlay">
+    <div class="modal-content">
+      <h2 style="color: #d1122a;">UNAVAILABLE</h2>
+      <p>Live Game mode is only available on Fridays starting at 9:00 PM.</p>
+      <button class="btn-modal btn-cancel" onclick="closeLiveError()">OK</button>
+    </div>
+  </div>
+
+  <!-- LIVE MODE CONFIRM MODAL -->
+  <div id="live-confirm-modal" class="modal-overlay">
+    <div class="modal-content">
+      <h2 style="color: #ffc107;">START LIVE GAME?</h2>
+      <p>Scores and events will be permanently synced to the official database. Proceed?</p>
+      <button class="btn-modal btn-score-up" onclick="confirmLiveMode()">YES, GO LIVE</button>
+      <button class="btn-modal btn-cancel" onclick="closeLiveConfirm()">CANCEL</button>
     </div>
   </div>
 
@@ -609,9 +628,44 @@
     }
     calculateGameNumber();
 
-    // --- TEST MODE TOGGLE LOGIC ---
-    function toggleMode() {
-      isLiveMode = !isLiveMode;
+    // --- TEST/LIVE MODE TOGGLE LOGIC ---
+    function toggleModeClick() {
+      if (isLiveMode) {
+        // Turning OFF is always allowed instantly
+        isLiveMode = false;
+        updateModeButton();
+      } else {
+        // Trying to turn ON - Verify Time Constraints
+        let now = new Date();
+        let day = now.getDay();
+        let hour = now.getHours();
+        
+        // Allowed: Friday (5) from 21:00 (9 PM) onwards OR Saturday (6) before 03:00 (3 AM)
+        let isGameWindow = (day === 5 && hour >= 21) || (day === 6 && hour < 3);
+        
+        if (!isGameWindow) {
+          document.getElementById('live-error-modal').style.display = 'flex';
+        } else {
+          document.getElementById('live-confirm-modal').style.display = 'flex';
+        }
+      }
+    }
+
+    function closeLiveError() {
+      document.getElementById('live-error-modal').style.display = 'none';
+    }
+
+    function closeLiveConfirm() {
+      document.getElementById('live-confirm-modal').style.display = 'none';
+    }
+
+    function confirmLiveMode() {
+      isLiveMode = true;
+      closeLiveConfirm();
+      updateModeButton();
+    }
+
+    function updateModeButton() {
       const btn = document.getElementById('mode-toggle-btn');
       if(isLiveMode) {
         btn.innerText = "🔴 LIVE GAME";
