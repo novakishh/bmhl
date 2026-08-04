@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   
-  <title>BMHL - Banh Mi Hockey League</title>
+  <title>BMHL - Ref Companion App</title>
 
   <!-- Open Graph Meta Tags -->
   <meta property="og:type" content="website">
@@ -36,6 +36,7 @@
       overflow: hidden;
       user-select: none; 
       -webkit-user-select: none;
+      -webkit-touch-callout: none;
       overscroll-behavior-y: none; 
     }
 
@@ -114,8 +115,19 @@
       padding: 10px 30px;
       touch-action: manipulation;
     }
-    
     .btn-timer:active { background-color: #fff; color: #d1122a; }
+
+    .btn-end-period {
+      background-color: #ff9800;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Anton', sans-serif;
+      font-size: 1.2rem;
+      padding: 10px 15px;
+      touch-action: manipulation;
+    }
+    .btn-end-period:active { background-color: #fff; }
 
     /* SHOOTOUT END GAME BUTTON */
     .btn-end-game {
@@ -131,7 +143,7 @@
       touch-action: manipulation;
     }
 
-    /* --- TEAM SCORING ZONES --- */
+    /* --- TEAM SCORING ZONES (MODULAR) --- */
     .scoring-area {
       display: flex;
       flex-direction: column;
@@ -150,48 +162,35 @@
     .white-team { background-color: #fff; color: #000; }
     .black-team { background-color: #000; color: #fff; border-top: 4px solid #333; }
 
-    .team-name {
-      font-family: 'Anton', sans-serif;
-      font-size: 2.5rem;
-      margin: 0;
-      text-transform: uppercase;
-      position: absolute;
-      top: 10px;
-      left: 15px;
+    /* RESPONSIVE LANDSCAPE MODE */
+    @media screen and (orientation: landscape) {
+      .scoring-area { flex-direction: row; }
+      .team-card { height: 100%; border-top: none; }
+      .black-team { border-left: 4px solid #333; border-top: none; }
     }
+
+    .score-box {
+      background-color: #222;
+      border: 4px solid #555;
+      border-radius: 20px;
+      width: 200px;
+      height: 160px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    
+    .score-box:active { transform: scale(0.96); background-color: #333; }
 
     .score {
       font-family: 'Anton', sans-serif;
       font-size: 8rem;
       line-height: 1;
-      margin-top: 0px; 
+      color: #fff;
     }
-
-    .score-controls {
-      display: flex;
-      gap: 20px;
-      margin-top: 10px;
-    }
-
-    .btn-score {
-      border: none;
-      border-radius: 12px;
-      font-family: 'Anton', sans-serif;
-      font-size: 3rem;
-      width: 80px;
-      height: 70px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      touch-action: manipulation;
-    }
-
-    .btn-minus { background-color: #555; color: #fff; opacity: 0.8; }
-    .btn-plus { background-color: #28a745; color: #fff; width: 120px; }
-
-    .white-team .btn-minus { background-color: #ccc; color: #000; }
-    
-    .btn-score:active { transform: scale(0.95); opacity: 1; }
 
     /* --- FULL SCREEN SHOOTOUT MODE --- */
     .shootout-container {
@@ -242,7 +241,6 @@
       font-size: 1.1rem;
       padding: 8px 20px;
     }
-
     .white-team .so-add-btn { border-color: #aaa; color: #444; }
 
     /* --- UNOBTRUSIVE FOOTER --- */
@@ -253,16 +251,27 @@
       padding-bottom: calc(env(safe-area-inset-bottom, 15px) + 12px);
       flex-shrink: 0;
       display: flex;
+      align-items: center;
       justify-content: space-between;
       font-family: 'Anton', sans-serif;
       font-size: 1rem;
       color: #666;
     }
-    
-    .display-val {
-      color: #aaa;
-      margin-left: 5px;
+
+    .mode-toggle {
+      background-color: #ffc107;
+      color: #000;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      font-family: 'Anton', sans-serif;
+      font-size: 1.1rem;
+      cursor: pointer;
+      touch-action: manipulation;
     }
+    .mode-live { background-color: #d1122a; color: #fff; }
+    
+    .display-val { color: #aaa; margin-left: 5px; }
 
     /* --- MODAL POPUPS --- */
     .modal-overlay {
@@ -316,6 +325,8 @@
     .btn-ot { background-color: #ff9800; color: #000; }
     .btn-so { background-color: #9c27b0; }
     .btn-final { background-color: #d1122a; }
+    .btn-cancel { background-color: #444; margin-top: 20px;}
+    .btn-score-up { background-color: #28a745; }
 
     /* SHOOTOUT CHOICE POPUP */
     .so-choice-box {
@@ -365,43 +376,9 @@
       font-family: 'Anton', sans-serif;
       touch-action: manipulation;
     }
-
-    /* --- LANDSCAPE BLOCKER --- */
-    @media screen and (orientation: landscape) {
-      #landscape-warning {
-        display: flex !important;
-      }
-    }
-
-    #landscape-warning {
-      display: none;
-      position: fixed;
-      top: 0; 
-      left: 0; 
-      width: 100vw; 
-      height: 100vh;
-      background-color: #000;
-      color: #fff;
-      z-index: 999999;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      flex-direction: column;
-      font-family: 'Anton', sans-serif;
-      font-size: 2rem;
-      padding: 20px;
-      box-sizing: border-box;
-    }
   </style>
 </head>
 <body>
-
-  <!-- LANDSCAPE ROTATION WARNING SHIELD -->
-  <div id="landscape-warning">
-    <div style="font-size: 4rem; margin-bottom: 10px;">📱🔄</div>
-    <div>PLEASE ROTATE YOUR DEVICE</div>
-    <div style="font-size: 1.2rem; color: #d1122a; margin-top: 10px;">PORTRAIT MODE ONLY</div>
-  </div>
 
   <!-- TOP BAR -->
   <div class="top-bar">
@@ -421,6 +398,7 @@
     <div class="timer-controls" id="timer-controls-section">
       <button class="btn-timer" id="start-stop-btn" onclick="toggleTimer()">START</button>
       <button class="btn-small" id="reset-btn" onclick="resetTimer()" style="margin-left: 10px;">RESET</button>
+      <button class="btn-end-period" id="end-period-btn" onclick="handlePeriodEnd()" style="margin-left: 10px;">END PERIOD</button>
     </div>
 
     <!-- SHOOTOUT END GAME BUTTON -->
@@ -432,13 +410,14 @@
     
     <!-- WHITE TEAM -->
     <div class="team-card white-team">
-      <h2 class="team-name">WHITE</h2>
-
-      <!-- STANDARD SCORE -->
-      <div class="score" id="white-score">0</div>
-      <div class="score-controls" id="white-score-controls">
-        <button class="btn-score btn-minus" onclick="changeScore('white', -1)">-</button>
-        <button class="btn-score btn-plus" onclick="changeScore('white', 1)">+</button>
+      <!-- STANDARD SCORE (LONG PRESS TRIGGER) -->
+      <div class="score-box" id="white-score-box"
+           onmousedown="startPress(event, 'white')" 
+           onmouseup="cancelPress()" 
+           onmouseleave="cancelPress()" 
+           ontouchstart="startPress(event, 'white')" 
+           ontouchend="cancelPress()">
+        <span class="score" id="white-score">0</span>
       </div>
 
       <!-- FULL SHOOTOUT TICKER VIEW -->
@@ -454,13 +433,14 @@
 
     <!-- BLACK TEAM -->
     <div class="team-card black-team">
-      <h2 class="team-name">BLACK</h2>
-
-      <!-- STANDARD SCORE -->
-      <div class="score" id="black-score">0</div>
-      <div class="score-controls" id="black-score-controls">
-        <button class="btn-score btn-minus" onclick="changeScore('black', -1)">-</button>
-        <button class="btn-score btn-plus" onclick="changeScore('black', 1)">+</button>
+      <!-- STANDARD SCORE (LONG PRESS TRIGGER) -->
+      <div class="score-box" id="black-score-box"
+           onmousedown="startPress(event, 'black')" 
+           onmouseup="cancelPress()" 
+           onmouseleave="cancelPress()" 
+           ontouchstart="startPress(event, 'black')" 
+           ontouchend="cancelPress()">
+        <span class="score" id="black-score">0</span>
       </div>
 
       <!-- FULL SHOOTOUT TICKER VIEW -->
@@ -476,10 +456,21 @@
 
   </div>
 
-  <!-- UNOBTRUSIVE FOOTER -->
+  <!-- UNOBTRUSIVE FOOTER WITH TEST TOGGLE -->
   <div class="footer-bar">
-    <div>BMHL REF COMPANION</div>
+    <div>REF COMPANION</div>
+    <button id="mode-toggle-btn" class="mode-toggle" onclick="toggleMode()">🟡 TEST MODE</button>
     <div>S<span class="display-val" id="season-display"></span> : G<span class="display-val" id="game-display"></span></div>
+  </div>
+
+  <!-- LONG PRESS SCORE MODAL -->
+  <div id="score-action-modal" class="modal-overlay">
+    <div class="modal-content">
+      <h2 id="score-action-title">ADJUST SCORE</h2>
+      <button class="btn-modal btn-score-up" onclick="confirmScoreChange(1)">+ 1 GOAL</button>
+      <button class="btn-modal btn-final" onclick="confirmScoreChange(-1)">- 1 GOAL</button>
+      <button class="btn-modal btn-cancel" onclick="closeScoreModal()">CANCEL</button>
+    </div>
   </div>
 
   <!-- END OF REGULATION POPUP -->
@@ -505,6 +496,9 @@
   </div>
 
   <script>
+    // Prevent default context menu (copy/paste popups) on long presses on mobile
+    document.addEventListener('contextmenu', event => event.preventDefault());
+
     // --- YOUR GOOGLE SCRIPT URL ---
     const scriptURL = 'https://script.google.com/macros/s/AKfycbyIOR9a1TsTk-NsxccwZdgNxmOPu_w7YWge9aEovUxCFXzWif3xsDQuLfT1DDbklQVm8g/exec';
 
@@ -513,9 +507,12 @@
     let pendingSyncGoals = []; 
     let currentPeriod = 1;
     let activeSoCircle = null;
+    let isLiveMode = false; // defaults to testing!
     
+    // Timer Variables (Atomic Date.now() logic)
     let startingMinutes = 20; 
-    let totalSeconds = startingMinutes * 60; 
+    let totalSeconds = startingMinutes * 60; // used for display math when paused
+    let expectedEndTime = 0; // exact atomic timestamp of when it hits 0
     let timerInterval = null;
     let isRunning = false;
 
@@ -536,8 +533,53 @@
       document.getElementById('season-display').innerText = autoSeason;
       document.getElementById('game-display').innerText = autoGame;
     }
-
     calculateGameNumber();
+
+    // --- TEST MODE TOGGLE LOGIC ---
+    function toggleMode() {
+      isLiveMode = !isLiveMode;
+      const btn = document.getElementById('mode-toggle-btn');
+      if(isLiveMode) {
+        btn.innerText = "🔴 LIVE GAME";
+        btn.classList.add('mode-live');
+      } else {
+        btn.innerText = "🟡 TEST MODE";
+        btn.classList.remove('mode-live');
+      }
+    }
+
+    // --- LONG PRESS SCORE UI ---
+    let pressTimer;
+    let targetTeamForScore = null;
+
+    function startPress(e, team) {
+      if (currentPeriod === 5 || currentPeriod === 6) return; // Disabled in Shootout/Final
+      pressTimer = setTimeout(() => {
+        openScoreModal(team);
+      }, 500); // 0.5 seconds long press
+    }
+
+    function cancelPress() {
+      clearTimeout(pressTimer);
+    }
+
+    function openScoreModal(team) {
+      targetTeamForScore = team;
+      document.getElementById('score-action-title').innerText = (team === 'white' ? 'WHITE' : 'BLACK') + " TEAM SCORE";
+      document.getElementById('score-action-modal').style.display = 'flex';
+    }
+
+    function closeScoreModal() {
+      document.getElementById('score-action-modal').style.display = 'none';
+      targetTeamForScore = null;
+    }
+
+    function confirmScoreChange(amount) {
+      if(targetTeamForScore) {
+        changeScore(targetTeamForScore, amount);
+      }
+      closeScoreModal();
+    }
 
     // --- SCORE & SILENT SYNC LOGIC ---
     function changeScore(team, amount) {
@@ -574,11 +616,16 @@
     }
 
     function triggerSilentSync(goalId) {
+      // Do not sync if testing mode is active!
+      if (!isLiveMode) {
+        console.log("TEST MODE: Blocked syncing to Google Sheets.");
+        return;
+      }
+
       const goalIndex = pendingSyncGoals.findIndex(g => g.id === goalId);
       
       if (goalIndex > -1) {
         const goalToSync = pendingSyncGoals.splice(goalIndex, 1)[0];
-
         const payload = {
           secretToken: "BanhMiHockey2026!",
           season: autoSeason,
@@ -589,12 +636,8 @@
         fetch(scriptURL, {
           method: 'POST',
           body: JSON.stringify(payload),
-          headers: {
-            "Content-Type": "text/plain;charset=utf-8",
-          }
-        })
-        .then(response => console.log("Goal synced silently to Google Sheets!"))
-        .catch(error => console.error("Sync failed:", error));
+          headers: { "Content-Type": "text/plain;charset=utf-8" }
+        }).catch(error => console.error("Sync failed:", error));
       }
     }
 
@@ -612,6 +655,36 @@
       
       document.getElementById('period-display').innerText = display;
       updateShootoutUI();
+    }
+
+    function handlePeriodEnd() {
+      // End the clock instantly
+      clearInterval(timerInterval);
+      isRunning = false;
+      totalSeconds = 0; // Display 00:00
+      updateTimerDisplay();
+      
+      const btn = document.getElementById('start-stop-btn');
+      btn.innerText = "START";
+      btn.style.backgroundColor = "#28a745";
+      
+      const setupBtns = [
+        document.getElementById('reset-btn'),
+        document.getElementById('period-minus-btn'),
+        document.getElementById('period-plus-btn'),
+        document.getElementById('time-minus-btn'),
+        document.getElementById('time-plus-btn'),
+        document.getElementById('end-period-btn')
+      ];
+      setupBtns.forEach(el => el.style.opacity = "1"); 
+
+      // If Period 3 ends, prompt OT/SO/End Game modal
+      if (currentPeriod === 3) {
+        document.getElementById('end-game-modal').style.display = 'flex';
+      } else if (currentPeriod < 3) {
+        changePeriod(1);
+        resetTimer();
+      }
     }
 
     function setPostGame(choice) {
@@ -636,7 +709,7 @@
       updateShootoutUI();
     }
 
-    // --- SHOOTOUT TICKER POPUP LOGIC ---
+    // --- SHOOTOUT UI LOGIC ---
     function openSoChoice(el) {
       activeSoCircle = el;
       document.getElementById('so-choice-modal').style.display = 'flex';
@@ -644,10 +717,8 @@
 
     function applySoChoice(result) {
       if (!activeSoCircle) return;
-
       activeSoCircle.classList.remove('so-goal', 'so-miss');
       activeSoCircle.innerText = "";
-
       if (result === 'goal') {
         activeSoCircle.classList.add('so-goal');
         activeSoCircle.innerText = "✓";
@@ -655,7 +726,6 @@
         activeSoCircle.classList.add('so-miss');
         activeSoCircle.innerText = "X";
       }
-
       document.getElementById('so-choice-modal').style.display = 'none';
       activeSoCircle = null;
     }
@@ -672,16 +742,12 @@
       const isShootout = (currentPeriod === 5);
       const isFinal = (currentPeriod === 6);
       
-      // Hide/Show Standard Scoreboard vs Shootout Screens
-      document.getElementById('white-score').style.display = isShootout ? 'none' : 'block';
-      document.getElementById('white-score-controls').style.display = isShootout ? 'none' : 'flex';
-      document.getElementById('black-score').style.display = isShootout ? 'none' : 'block';
-      document.getElementById('black-score-controls').style.display = isShootout ? 'none' : 'flex';
+      document.getElementById('white-score-box').style.display = isShootout ? 'none' : 'flex';
+      document.getElementById('black-score-box').style.display = isShootout ? 'none' : 'flex';
 
       document.getElementById('white-so-container').style.display = isShootout ? 'flex' : 'none';
       document.getElementById('black-so-container').style.display = isShootout ? 'flex' : 'none';
 
-      // Hide Timer & Controls on Shootout and Final
       if (isShootout) {
         document.getElementById('timer-wrapper-section').style.display = 'none';
         document.getElementById('timer-controls-section').style.display = 'none';
@@ -702,38 +768,26 @@
       let whiteGoals = 0;
       let blackGoals = 0;
 
-      // 1. Read White Shooters
       const whiteCircles = document.querySelectorAll('#white-ticker .so-circle');
       whiteCircles.forEach((c, idx) => {
         if (c.classList.contains('so-goal') || c.classList.contains('so-miss')) {
           const isGoal = c.classList.contains('so-goal');
           if (isGoal) whiteGoals++;
-          shootoutEvents.push({
-            shooter: "WHITE",
-            goalie: "BLACK",
-            time: "SO Shot " + (idx + 1),
-            score: isGoal ? "GOAL" : "MISS"
-          });
+          shootoutEvents.push({ shooter: "WHITE", goalie: "BLACK", time: "SO Shot " + (idx + 1), score: isGoal ? "GOAL" : "MISS" });
         }
       });
 
-      // 2. Read Black Shooters
       const blackCircles = document.querySelectorAll('#black-ticker .so-circle');
       blackCircles.forEach((c, idx) => {
         if (c.classList.contains('so-goal') || c.classList.contains('so-miss')) {
           const isGoal = c.classList.contains('so-goal');
           if (isGoal) blackGoals++;
-          shootoutEvents.push({
-            shooter: "BLACK",
-            goalie: "WHITE",
-            time: "SO Shot " + (idx + 1),
-            score: isGoal ? "GOAL" : "MISS"
-          });
+          shootoutEvents.push({ shooter: "BLACK", goalie: "WHITE", time: "SO Shot " + (idx + 1), score: isGoal ? "GOAL" : "MISS" });
         }
       });
 
-      // 3. Send Shootout Detailed Log to Columns AC:AG (WITH SEASON + GAME INCLUDED)
-      if (shootoutEvents.length > 0) {
+      // Send to sheets ONLY if in Live Mode
+      if (shootoutEvents.length > 0 && isLiveMode) {
         fetch(scriptURL, {
           method: 'POST',
           body: JSON.stringify({
@@ -747,7 +801,6 @@
         });
       }
 
-      // 4. Update the on-screen display score ONLY
       let finalWhite = goalEvents.filter(e => e.team === 'white').length;
       let finalBlack = goalEvents.filter(e => e.team === 'black').length;
       if (whiteGoals > blackGoals) finalWhite++;
@@ -756,13 +809,12 @@
       document.getElementById('white-score').innerText = finalWhite;
       document.getElementById('black-score').innerText = finalBlack;
 
-      // 5. Change Period to FINAL
       currentPeriod = 6;
       document.getElementById('period-display').innerText = "FINAL";
       updateShootoutUI();
     }
 
-    // --- TIMER LOGIC ---
+    // --- ACCURATE ATOMIC TIMER LOGIC ---
     function updateTimerDisplay() {
       let minutes = Math.floor(totalSeconds / 60);
       let seconds = totalSeconds % 60;
@@ -786,43 +838,47 @@
         document.getElementById('period-minus-btn'),
         document.getElementById('period-plus-btn'),
         document.getElementById('time-minus-btn'),
-        document.getElementById('time-plus-btn')
+        document.getElementById('time-plus-btn'),
+        document.getElementById('end-period-btn')
       ];
       
       if (isRunning) {
-        clearInterval(timerInterval);
+        // Pause Action
         isRunning = false;
+        clearInterval(timerInterval);
+        
+        // Lock in remaining time
+        let now = Date.now();
+        let remaining = expectedEndTime - now;
+        totalSeconds = Math.max(0, Math.ceil(remaining / 1000));
+        updateTimerDisplay();
+
         btn.innerText = "START";
         btn.style.backgroundColor = "#28a745"; 
         setupBtns.forEach(el => el.style.opacity = "1");
       } else {
+        // Start Action
         isRunning = true;
+        
+        // Calculate atomic end time from exactly right now
+        expectedEndTime = Date.now() + (totalSeconds * 1000);
+        
         btn.innerText = "PAUSE";
         btn.style.backgroundColor = "#d1122a"; 
         setupBtns.forEach(el => el.style.opacity = "0.3");
         
+        // Rapid check to keep display smooth without losing time
         timerInterval = setInterval(() => {
-          if (totalSeconds > 0) {
-            totalSeconds--;
-            updateTimerDisplay();
+          let now = Date.now();
+          let delta = expectedEndTime - now;
+          
+          if (delta <= 0) {
+            handlePeriodEnd();
           } else {
-            // --- TIMER HITS 00:00 ---
-            clearInterval(timerInterval);
-            isRunning = false;
-            
-            btn.innerText = "START";
-            btn.style.backgroundColor = "#28a745";
-            setupBtns.forEach(el => el.style.opacity = "1"); 
-
-            // Pop modal after Period 3. Otherwise auto-advance periods.
-            if (currentPeriod === 3) {
-              document.getElementById('end-game-modal').style.display = 'flex';
-            } else if (currentPeriod < 3) {
-              changePeriod(1);
-              resetTimer();
-            }
+            totalSeconds = Math.ceil(delta / 1000);
+            updateTimerDisplay();
           }
-        }, 1000);
+        }, 200); 
       }
     }
 
@@ -837,13 +893,8 @@
       updateTimerDisplay();
     }
 
-    // Synchronize UI display state on startup
+    // Init display
     updateShootoutUI();
-
-    // Force screen orientation to portrait if supported by device
-  if (screen.orientation && screen.orientation.lock) {
-    screen.orientation.lock('portrait').catch(() => {});
-  }
   </script>
 </body>
 </html>
