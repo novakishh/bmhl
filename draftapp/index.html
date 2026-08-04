@@ -101,45 +101,20 @@
     }
 
     @keyframes iceCracken {
-      0% {
-        opacity: 0;
-        transform: scale(2.5) translateY(-30px);
-        filter: blur(8px);
-      }
-      100% {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-        filter: blur(0);
-      }
+      0% { opacity: 0; transform: scale(2.5) translateY(-30px); filter: blur(8px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
     }
 
-    @keyframes fadeIn {
-      0% { opacity: 0; }
-      100% { opacity: 1; }
-    }
+    @keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
 
     @keyframes monogramZoomThru {
-      0% {
-        opacity: 1;
-        transform: skewX(-12deg) scale(1);
-        filter: blur(0px);
-      }
-      100% {
-        opacity: 0;
-        transform: skewX(-12deg) scale(14);
-        filter: blur(8px);
-      }
+      0% { opacity: 1; transform: skewX(-12deg) scale(1); filter: blur(0px); }
+      100% { opacity: 0; transform: skewX(-12deg) scale(14); filter: blur(8px); }
     }
 
     @keyframes splashContainerFade {
-      0% {
-        opacity: 1;
-        visibility: visible;
-      }
-      100% {
-        opacity: 0;
-        visibility: hidden;
-      }
+      0% { opacity: 1; visibility: visible; }
+      100% { opacity: 0; visibility: hidden; }
     }
 
     /* --- PAGE CONTENT FADE IN --- */
@@ -152,10 +127,7 @@
       width: 100%;
     }
 
-    @keyframes appContentFadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
+    @keyframes appContentFadeIn { from { opacity: 0; } to { opacity: 1; } }
 
     /* --- TOP HEADER BAR --- */
     .header-wrapper {
@@ -177,11 +149,7 @@
     .role-badge { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
     .role-badge.logged-in { color: var(--accent-green); }
 
-    .header-btn-group {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
+    .header-btn-group { display: flex; gap: 8px; align-items: center; }
 
     .btn-nav {
       background-color: transparent;
@@ -222,12 +190,7 @@
       flex-wrap: wrap;
     }
 
-    .ready-badges-group {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
+    .ready-badges-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
     .ready-status-box {
       font-size: 0.75rem;
@@ -423,9 +386,10 @@
     let isUnlocked = false;
     let myIdentity = "Spectator";
     let pendingPick = null;
+    let isSubmitting = false;
     let draftState = { players: [], settings: { cap1: "Team 1", cap2: "Team 2", turn: "", status: "WAITING", cap1Ready: false, cap2Ready: false } };
 
-    // Remove splash screen overlay after animation
+    // Remove splash screen overlay
     setTimeout(() => {
       const splash = document.getElementById('splash-screen');
       if (splash) splash.style.display = 'none';
@@ -439,6 +403,15 @@
       else if (tab === 'team2') { document.getElementById('tab-btn-team2').classList.add('active'); document.getElementById('panel-team2').classList.add('active-tab'); }
     }
 
+    // Dynamic polling loop (1.5s interval during LIVE draft)
+    async function pollLoop() {
+      if (!isSubmitting) {
+        await fetchDraftData();
+      }
+      const delay = (draftState.settings.status === "LIVE") ? 1500 : 3000;
+      setTimeout(pollLoop, delay);
+    }
+
     async function fetchDraftData() {
       try {
         const response = await fetch(scriptURL + "?api=draft");
@@ -450,8 +423,7 @@
       } catch (err) { console.error("Fetch failed", err); }
     }
 
-    fetchDraftData();
-    setInterval(fetchDraftData, 3000);
+    pollLoop();
 
     function renderDraftBoard() {
       const cap1 = draftState.settings.cap1 || "Team 1";
@@ -556,48 +528,60 @@
       document.getElementById('count-team2').innerText = countT2;
     }
 
-    // --- API CALLS ---
+    // --- API CALLS WITH OPTIMISTIC RENDERING ---
     async function sendReadyUp() {
       const btn = document.getElementById('btn-ready-up');
       btn.innerText = "CONFIRMING...";
       const payload = { secretToken: "BanhMiHockey2026!", type: "readyUp", captain: myIdentity };
       try {
         const response = await fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" } });
-        const resText = await response.text();
-        if (resText.includes("Error") || resText.includes("Denied")) {
-          alert("Ready Up Error: " + resText);
-        }
-        await fetchDraftData();
-      } catch (err) { 
-        alert("Error sending ready status: " + err.message); 
-      } finally {
-        btn.innerText = "I AM READY";
-      }
+        const data = await response.json();
+        if (data.error) alert("Error: " + data.error);
+        else { draftState = data; renderDraftBoard(); }
+      } catch (err) { alert("Error sending ready status."); } 
+      finally { btn.innerText = "I AM READY"; }
     }
 
     async function submitPick() {
       if (!pendingPick) return;
-      const submitBtn = document.getElementById('btn-submit-pick');
-      submitBtn.innerText = "SUBMITTING...";
-      submitBtn.disabled = true;
+      isSubmitting = true;
 
-      const payload = { secretToken: "BanhMiHockey2026!", type: "draftPick", player: pendingPick, captain: draftState.settings.turn };
+      const playerToPick = pendingPick;
+      const pickingCaptain = draftState.settings.turn;
+      closeModal('confirm-modal');
+
+      // 1. OPTIMISTIC INSTANT UI UPDATE (0ms delay for local user)
+      let playerObj = draftState.players.find(p => p.name.toLowerCase() === playerToPick.toLowerCase());
+      if (playerObj) {
+        playerObj.draftedBy = pickingCaptain;
+        playerObj.pickNum = draftState.players.filter(p => p.draftedBy).length + 1;
+      }
+      
+      const cap1 = draftState.settings.cap1;
+      const cap2 = draftState.settings.cap2;
+      draftState.settings.turn = (pickingCaptain.toLowerCase() === cap1.toLowerCase()) ? cap2 : cap1;
+      
+      renderDraftBoard(); 
+      pendingPick = null;
+
+      // 2. BACKGROUND SERVER SYNC
+      const payload = { secretToken: "BanhMiHockey2026!", type: "draftPick", player: playerToPick, captain: pickingCaptain };
       try {
         const response = await fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" } });
-        const resText = await response.text();
+        const data = await response.json();
         
-        if (resText.includes("Error") || resText.includes("Denied")) {
-          alert("Draft Pick Error: " + resText);
+        if (data.error) {
+          alert("Pick Error: " + data.error);
+          await fetchDraftData(); // Re-fetch on error
         } else {
-          await fetchDraftData();
+          draftState = data; // Sync with server state
+          renderDraftBoard();
         }
       } catch (err) { 
         alert("Network Error submitting pick: " + err.message); 
+        await fetchDraftData();
       } finally {
-        submitBtn.innerText = "YES, DRAFT";
-        submitBtn.disabled = false;
-        closeModal('confirm-modal');
-        pendingPick = null;
+        isSubmitting = false;
       }
     }
 
