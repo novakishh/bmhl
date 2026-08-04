@@ -118,18 +118,6 @@
       background-color: var(--border-color);
     }
 
-    .identity-banner {
-      background-color: var(--accent-green);
-      color: #fff;
-      font-size: 0.8rem;
-      font-weight: 700;
-      text-align: center;
-      padding: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      display: none;
-    }
-
     /* --- MOBILE TABS --- */
     .mobile-tabs {
       display: flex;
@@ -381,9 +369,6 @@
 </head>
 <body>
 
-  <!-- IDENTITY BANNER -->
-  <div id="identity-banner" class="identity-banner">COMMISSIONER MODE</div>
-
   <!-- HEADER BAR -->
   <div class="header-wrapper">
     <div class="header-bar">
@@ -444,7 +429,6 @@
     <div class="modal-content">
       <h3>UNLOCK DRAFT</h3>
       <select id="identity-select" class="modal-input">
-        <option value="Commissioner">Commissioner (Admin)</option>
         <option id="opt-cap1" value="cap1">Captain 1</option>
         <option id="opt-cap2" value="cap2">Captain 2</option>
       </select>
@@ -467,6 +451,10 @@
   <script>
     const scriptURL = 'https://script.google.com/macros/s/AKfycbyIOR9a1TsTk-NsxccwZdgNxmOPu_w7YWge9aEovUxCFXzWif3xsDQuLfT1DDbklQVm8g/exec';
     
+    // --- PIN SETTINGS ---
+    const CAP1_PIN = "1111"; // PIN for Captain 1
+    const CAP2_PIN = "2222"; // PIN for Captain 2
+
     let isUnlocked = false;
     let myIdentity = "Spectator";
     
@@ -526,7 +514,7 @@
       let turnText = draftState.settings.turn ? draftState.settings.turn.toUpperCase() + "'S TURN" : "WAITING";
       if (draftState.settings.status !== "LIVE") turnText = "DRAFT PAUSED";
       
-      if (isUnlocked && myIdentity !== "Commissioner") {
+      if (isUnlocked) {
         if (draftState.settings.turn === myIdentity) {
           turnText = "👉 YOUR TURN";
           document.getElementById('turn-display').style.color = "var(--accent-green)";
@@ -557,7 +545,7 @@
 
       let isMyTurn = false;
       if (isUnlocked && draftState.settings.status === "LIVE") {
-        if (myIdentity === "Commissioner" || myIdentity === draftState.settings.turn) {
+        if (myIdentity === draftState.settings.turn) {
           isMyTurn = true;
         }
       }
@@ -612,10 +600,23 @@
     }
 
     function verifyPin() {
-      const pin = document.getElementById('pin-input').value;
-      if (pin === "2026") {
+      const pin = document.getElementById('pin-input').value.trim();
+      const selectedIdentity = document.getElementById('identity-select').value;
+      
+      const cap1Name = draftState.settings.cap1 || "cap1";
+      const cap2Name = draftState.settings.cap2 || "cap2";
+
+      let isValid = false;
+
+      if (selectedIdentity === cap1Name && pin === CAP1_PIN) {
+        isValid = true;
+      } else if (selectedIdentity === cap2Name && pin === CAP2_PIN) {
+        isValid = true;
+      }
+
+      if (isValid) {
         isUnlocked = true;
-        myIdentity = document.getElementById('identity-select').value;
+        myIdentity = selectedIdentity;
         
         closeModal('login-modal');
         document.getElementById('login-btn').style.display = 'none';
@@ -626,7 +627,7 @@
 
         renderDraftBoard(); 
       } else {
-        alert("Incorrect PIN");
+        alert("Incorrect PIN for selected Captain.");
       }
     }
 
