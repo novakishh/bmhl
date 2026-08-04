@@ -19,8 +19,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="BMHL Draft">
   
-  <!-- Jitsi External API -->
-  <script src="https://meet.jit.si/external_api.js"></script>
+  <!-- Open Jitsi External API (No Moderator Login Required) -->
+  <script src="https://meet.ffmuc.net/external_api.js"></script>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
@@ -408,10 +408,10 @@
     };
     let pendingPick = null;
 
-    // --- EMBED JITSI LIVE VIDEO CALL ---
+    // --- EMBED OPEN JITSI LIVE VIDEO CALL ---
     function initVideoCall(displayName, startMuted) {
-      const domain = "jitsi.member.fsf.org";
-      const roomName = "BMHL_Weekly_Draft_Room_2026"; // Room name shared across league
+      const domain = "meet.ffmuc.net"; // Open community instance requiring no logins
+      const roomName = "BMHL_Draft_Room_2026_Live"; 
       
       const options = {
         roomName: roomName,
@@ -436,7 +436,7 @@
       };
 
       if (jitsiApi) {
-        jitsiApi.dispose(); // Clean up old instance if identity changes
+        jitsiApi.dispose();
       }
 
       jitsiApi = new JitsiMeetExternalAPI(domain, options);
