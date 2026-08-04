@@ -969,6 +969,39 @@
 
     // Init display
     updateShootoutUI();
+
+    // --- SCREEN WAKE LOCK (PREVENT PHONE FROM SLEEPING) ---
+    let wakeLock = null;
+
+    const requestWakeLock = async () => {
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLock = await navigator.wakeLock.request('screen');
+          console.log('Screen Wake Lock active! Phone will not sleep.');
+          
+          wakeLock.addEventListener('release', () => {
+            wakeLock = null;
+            console.log('Screen Wake Lock released.');
+          });
+        }
+      } catch (err) {
+        console.error(`Wake Lock failed: ${err.message}`);
+      }
+    };
+
+    // Re-request wake lock if the ref switches apps and comes back
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        requestWakeLock();
+      }
+    });
+
+    // Request wake lock on the very first tap/click anywhere on the screen
+    document.addEventListener('pointerdown', () => {
+      if (!wakeLock) {
+        requestWakeLock();
+      }
+    });
   </script>
 </body>
 </html>
