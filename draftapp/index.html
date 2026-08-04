@@ -19,91 +19,148 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="BMHL Draft">
 
+  <!-- Jitsi API Embed -->
+  <script src="https://meet.jit.si/external_api.js"></script>
+
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
+    :root {
+      --bg-main: #0e1015;
+      --bg-panel: #161922;
+      --bg-card: #1f2430;
+      --border-color: #2b3142;
+      --accent-red: #d1122a;
+      --accent-green: #28a745;
+      --accent-yellow: #ffc107;
+      --accent-blue: #007bff;
+      --text-main: #f0f2f5;
+      --text-muted: #8a94a6;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+    }
 
     body {
-      background-color: #111;
-      color: white;
-      font-family: 'Arial', sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       margin: 0;
       padding: 0;
       display: flex;
       flex-direction: column;
       height: 100vh;
-      overflow-x: hidden;
+      overflow: hidden;
     }
 
     /* --- TOP BAR --- */
     .top-bar {
       background-color: #000;
-      border-bottom: 4px solid #d1122a;
+      border-bottom: 2px solid var(--border-color);
+      padding: 10px 15px;
+      padding-top: max(env(safe-area-inset-top), 10px);
       display: flex;
-      flex-direction: column;
+      justify-content: space-between;
       align-items: center;
-      padding: 15px 10px;
-      padding-top: max(env(safe-area-inset-top), 15px);
       flex-shrink: 0;
-      z-index: 100;
-      text-align: center;
     }
 
-    .draft-title {
-      font-family: 'Anton', sans-serif;
-      font-size: 1.5rem;
-      color: #666;
-      margin: 0;
-      line-height: 1;
-    }
-
-    .turn-indicator {
-      font-family: 'Anton', sans-serif;
-      font-size: 3rem;
-      color: #ffc107;
-      margin: 5px 0 0 0;
-      line-height: 1;
+    .status-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
       text-transform: uppercase;
     }
 
+    .turn-display {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--accent-yellow);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
     .identity-banner {
-      background-color: #28a745;
-      color: white;
-      font-family: 'Anton', sans-serif;
-      width: 100%;
+      background-color: var(--accent-green);
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 700;
       text-align: center;
-      padding: 5px;
-      font-size: 1.2rem;
+      padding: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
       display: none;
     }
 
-    /* --- VIDEO LAUNCH BAR --- */
+    /* --- VIDEO STREAM SECTION --- */
     .video-section {
-      background-color: #1a1a1a;
-      border-bottom: 2px solid #333;
+      background-color: #000;
+      border-bottom: 2px solid var(--border-color);
       width: 100%;
-      display: flex;
-      justify-content: center;
-      padding: 10px 0;
+      flex-shrink: 0;
     }
 
-    .video-launch-btn {
-      background-color: #d1122a;
-      color: #fff;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-family: 'Anton', sans-serif;
-      font-size: 1.2rem;
-      cursor: pointer;
+    .video-header {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 10px;
-      touch-action: manipulation;
-      transition: background-color 0.2s;
+      padding: 6px 12px;
+      background-color: #12141c;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
     }
 
-    .video-launch-btn:active {
-      background-color: #ff2a4b;
+    .btn-toggle-video {
+      background: none;
+      border: none;
+      color: var(--accent-red);
+      font-weight: 700;
+      font-size: 0.8rem;
+      cursor: pointer;
+      padding: 2px 6px;
+    }
+
+    #jitsi-container {
+      width: 100%;
+      height: 180px;
+      background-color: #000;
+    }
+
+    @media screen and (min-width: 768px) {
+      #jitsi-container {
+        height: 240px;
+      }
+    }
+
+    /* --- MOBILE TAB BAR --- */
+    .mobile-tabs {
+      display: flex;
+      background-color: #12141c;
+      border-bottom: 1px solid var(--border-color);
+      flex-shrink: 0;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px 5px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+    }
+
+    .tab-btn.active {
+      color: var(--text-main);
+      border-bottom-color: var(--accent-red);
+      background-color: rgba(209, 18, 42, 0.05);
     }
 
     /* --- DRAFT BOARD LAYOUT --- */
@@ -111,236 +168,262 @@
       display: flex;
       flex-direction: column;
       flex-grow: 1;
-      overflow-y: auto;
+      overflow: hidden;
       padding: 10px;
-      gap: 15px;
     }
 
     @media screen and (min-width: 768px) {
+      .mobile-tabs { display: none; }
       .draft-container {
         flex-direction: row;
-        overflow-y: hidden;
+        gap: 12px;
       }
       .panel {
-        overflow-y: auto;
-        height: 100%;
+        display: flex !important;
+        flex: 1;
       }
-      .center-panel { flex: 2; }
-      .side-panel { flex: 1; }
+      .panel.center-panel { flex: 1.5; }
     }
 
     .panel {
-      background-color: #1a1a1a;
-      border: 2px solid #333;
-      border-radius: 12px;
-      padding: 15px;
+      background-color: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    /* On mobile, control visibility via active tab */
+    @media screen and (max-width: 767px) {
+      .panel { display: none; }
+      .panel.active-tab { display: flex; }
     }
 
     .panel-title {
-      font-family: 'Anton', sans-serif;
-      font-size: 1.8rem;
-      color: #fff;
-      text-align: center;
-      margin-top: 0;
-      margin-bottom: 15px;
-      border-bottom: 2px solid #333;
-      padding-bottom: 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 0 0 10px 0;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .count-badge {
+      background-color: var(--border-color);
+      color: var(--text-main);
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 12px;
     }
 
     /* --- PLAYER LISTS --- */
     .player-list {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
+      overflow-y: auto;
+      flex-grow: 1;
+      padding-right: 2px;
     }
 
     .player-card {
-      background-color: #222;
-      border: 2px solid #444;
-      padding: 12px 15px;
-      border-radius: 8px;
-      font-size: 1.2rem;
-      font-weight: bold;
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-weight: 600;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      transition: transform 0.1s;
     }
 
-    .player-card.goalie {
-      border-color: #007bff;
-    }
-
-    .player-type {
-      font-size: 0.8rem;
-      color: #aaa;
+    .type-tag {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background-color: rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
       text-transform: uppercase;
-      font-family: 'Anton', sans-serif;
     }
 
-    .goalie .player-type { color: #007bff; }
+    .player-card.goalie .type-tag {
+      background-color: rgba(0, 123, 255, 0.2);
+      color: #66b0ff;
+    }
 
-    /* Interactive state for unlocked captains whose turn it is */
-    .interactive .player-card { cursor: pointer; }
-    .interactive .player-card:active { transform: scale(0.97); background-color: #333; }
-    .interactive .player-card:hover { border-color: #d1122a; }
+    /* Interactive mode for captain turn */
+    .interactive .player-card {
+      cursor: pointer;
+      border-color: rgba(209, 18, 42, 0.4);
+    }
+    .interactive .player-card:hover {
+      background-color: #282f3f;
+      border-color: var(--accent-red);
+    }
 
     /* Roster Cards */
     .roster-card {
-      background-color: #333;
-      padding: 10px;
-      border-radius: 5px;
-      margin-bottom: 5px;
-      font-weight: bold;
-      display: flex;
-      justify-content: space-between;
-    }
-    .roster-pick {
-      color: #888;
-      font-family: 'Anton', sans-serif;
-    }
-
-    /* --- FOOTER & LOGIN --- */
-    .footer-bar {
-      background-color: #000;
-      border-top: 2px solid #333;
-      padding: 12px 15px;
-      padding-bottom: calc(env(safe-area-inset-bottom, 15px) + 12px);
+      background-color: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-family: 'Anton', sans-serif;
-      font-size: 1rem;
-      color: #666;
+    }
+
+    .pick-number {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+
+    /* --- FOOTER --- */
+    .footer-bar {
+      background-color: #000;
+      border-top: 1px solid var(--border-color);
+      padding: 8px 15px;
+      padding-bottom: calc(env(safe-area-inset-bottom, 8px) + 8px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      flex-shrink: 0;
     }
 
     .btn-login {
-      background-color: #444;
-      color: #fff;
-      border: none;
-      padding: 8px 15px;
-      border-radius: 5px;
-      font-family: 'Anton', sans-serif;
+      background-color: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
       cursor: pointer;
     }
-    .btn-login.unlocked { background-color: #28a745; display: none; }
 
     /* --- MODALS --- */
     .modal-overlay {
       display: none;
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.9);
+      background: rgba(0, 0, 0, 0.85);
       z-index: 1000;
       justify-content: center;
       align-items: center;
       padding: 20px;
-      box-sizing: border-box;
     }
 
     .modal-content {
-      background: #111;
-      padding: 30px 20px;
-      border-radius: 15px;
-      border: 2px solid #333;
+      background: var(--bg-panel);
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
       text-align: center;
       width: 100%;
-      max-width: 350px;
+      max-width: 320px;
     }
 
-    .modal-content h2 {
-      font-family: 'Anton', sans-serif;
-      color: #fff;
-      font-size: 2rem;
+    .modal-content h3 {
       margin: 0 0 10px 0;
+      font-size: 1.2rem;
     }
 
     .modal-input {
       width: 100%;
-      padding: 15px;
-      font-size: 1.5rem;
+      padding: 10px;
+      font-size: 1rem;
       text-align: center;
-      border-radius: 8px;
-      border: 2px solid #555;
-      background-color: #222;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background-color: var(--bg-main);
       color: #fff;
-      margin-bottom: 15px;
-      box-sizing: border-box;
-      font-family: 'Anton', sans-serif;
-    }
-    
-    select.modal-input {
-      appearance: none;
-      -webkit-appearance: none;
-      cursor: pointer;
+      margin-bottom: 12px;
     }
 
     .btn-modal {
-      display: block;
       width: 100%;
-      margin: 10px 0;
-      padding: 15px;
-      font-family: 'Anton', sans-serif;
-      font-size: 1.2rem;
-      border-radius: 8px;
+      padding: 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      border-radius: 6px;
       border: none;
       color: white;
       cursor: pointer;
+      margin-top: 6px;
     }
 
-    .btn-confirm { background-color: #d1122a; }
-    .btn-cancel { background-color: #444; }
-
-    /* Spinner */
-    .loader {
-      border: 6px solid #222;
-      border-top: 6px solid #d1122a;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin: 0 auto;
-      display: none;
-    }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .btn-confirm { background-color: var(--accent-red); }
+    .btn-cancel { background-color: #333; }
   </style>
 </head>
 <body>
 
   <!-- IDENTITY BANNER -->
-  <div id="identity-banner" class="identity-banner">LOGGED IN AS: COMMISSIONER</div>
+  <div id="identity-banner" class="identity-banner">COMMISSIONER MODE</div>
 
   <!-- TOP BAR -->
   <div class="top-bar">
-    <div class="draft-title" id="draft-status">CONNECTING...</div>
-    <div class="turn-indicator" id="turn-display">WAITING FOR DATA</div>
+    <div class="status-badge" id="draft-status">CONNECTING...</div>
+    <div class="turn-display" id="turn-display">LOADING</div>
   </div>
 
-  <!-- LIVE VIDEO CALL LAUNCHER -->
+  <!-- EMBEDDED VIDEO CALL -->
   <div class="video-section">
-    <button class="video-launch-btn" onclick="openLiveCall()">🎥 JOIN LIVE DRAFT CALL</button>
+    <div class="video-header">
+      <span>🎥 LIVE DRAFT CALL</span>
+      <button class="btn-toggle-video" onclick="toggleVideo()">HIDE / SHOW</button>
+    </div>
+    <div id="jitsi-container"></div>
   </div>
 
-  <!-- DRAFT BOARD -->
+  <!-- MOBILE TABS -->
+  <div class="mobile-tabs">
+    <button class="tab-btn active" id="tab-btn-avail" onclick="switchTab('available')">AVAILABLE (<span id="mobile-count-avail">0</span>)</button>
+    <button class="tab-btn" id="tab-btn-team1" onclick="switchTab('team1')">TEAM 1</button>
+    <button class="tab-btn" id="tab-btn-team2" onclick="switchTab('team2')">TEAM 2</button>
+  </div>
+
+  <!-- DRAFT CONTAINER -->
   <div class="draft-container">
     
-    <!-- LEFT PANEL: CAPTAIN 1 ROSTER -->
-    <div class="panel side-panel">
-      <h2 class="panel-title" id="team1-title">TEAM 1</h2>
+    <!-- LEFT PANEL: TEAM 1 -->
+    <div class="panel" id="panel-team1">
+      <div class="panel-title">
+        <span id="team1-title">TEAM 1</span>
+        <span class="count-badge" id="count-team1">0</span>
+      </div>
       <div class="player-list" id="team1-roster"></div>
     </div>
 
-    <!-- CENTER PANEL: AVAILABLE PLAYERS -->
-    <div class="panel center-panel" id="available-panel">
-      <h2 class="panel-title">AVAILABLE PLAYERS</h2>
+    <!-- CENTER PANEL: AVAILABLE -->
+    <div class="panel active-tab" id="panel-available">
+      <div class="panel-title">
+        <span>AVAILABLE PLAYERS</span>
+        <span class="count-badge" id="count-avail">0</span>
+      </div>
       <div class="player-list" id="available-players"></div>
     </div>
 
-    <!-- RIGHT PANEL: CAPTAIN 2 ROSTER -->
-    <div class="panel side-panel">
-      <h2 class="panel-title" id="team2-title">TEAM 2</h2>
+    <!-- RIGHT PANEL: TEAM 2 -->
+    <div class="panel" id="panel-team2">
+      <div class="panel-title">
+        <span id="team2-title">TEAM 2</span>
+        <span class="count-badge" id="count-team2">0</span>
+      </div>
       <div class="player-list" id="team2-roster"></div>
     </div>
 
@@ -348,24 +431,20 @@
 
   <!-- FOOTER -->
   <div class="footer-bar">
-    <div>SPECTATOR MODE</div>
+    <div id="user-role-display">SPECTATOR MODE</div>
     <button class="btn-login" id="login-btn" onclick="openLogin()">UNLOCK DRAFT</button>
   </div>
 
   <!-- LOGIN MODAL -->
   <div id="login-modal" class="modal-overlay">
     <div class="modal-content">
-      <h2>UNLOCK DRAFT</h2>
-      
-      <!-- Identity Selection -->
+      <h3>UNLOCK DRAFT</h3>
       <select id="identity-select" class="modal-input">
         <option value="Commissioner">Commissioner (Admin)</option>
         <option id="opt-cap1" value="cap1">Captain 1</option>
         <option id="opt-cap2" value="cap2">Captain 2</option>
       </select>
-
       <input type="password" id="pin-input" class="modal-input" placeholder="PIN (****)" inputmode="numeric" maxlength="4">
-      
       <button class="btn-modal btn-confirm" onclick="verifyPin()">LOGIN</button>
       <button class="btn-modal btn-cancel" onclick="closeModal('login-modal')">CANCEL</button>
     </div>
@@ -374,22 +453,19 @@
   <!-- CONFIRM PICK MODAL -->
   <div id="confirm-modal" class="modal-overlay">
     <div class="modal-content">
-      <h2>CONFIRM PICK</h2>
-      <p style="font-size: 1.2rem;">Draft <strong id="confirm-player-name" style="color:#d1122a;"></strong>?</p>
-      <div class="loader" id="pick-loader"></div>
-      <div id="confirm-buttons">
-        <button class="btn-modal btn-confirm" onclick="submitPick()">YES, DRAFT</button>
-        <button class="btn-modal btn-cancel" onclick="closeModal('confirm-modal')">CANCEL</button>
-      </div>
+      <h3>CONFIRM PICK</h3>
+      <p style="margin: 15px 0; font-size: 1.1rem;">Draft <strong id="confirm-player-name" style="color:var(--accent-red);"></strong>?</p>
+      <button class="btn-modal btn-confirm" onclick="submitPick()">YES, DRAFT</button>
+      <button class="btn-modal btn-cancel" onclick="closeModal('confirm-modal')">CANCEL</button>
     </div>
   </div>
 
   <script>
-    // --- APP STATE ---
     const scriptURL = 'https://script.google.com/macros/s/AKfycbyIOR9a1TsTk-NsxccwZdgNxmOPu_w7YWge9aEovUxCFXzWif3xsDQuLfT1DDbklQVm8g/exec';
     
     let isUnlocked = false;
     let myIdentity = "Spectator";
+    let jitsiApi = null;
     
     let draftState = {
       players: [],
@@ -397,11 +473,59 @@
     };
     let pendingPick = null;
 
-    // --- LAUNCH LIVE VIDEO CALL IN NEW TAB ---
-    function openLiveCall() {
-      // Room name dynamically generated for your league
-      const roomUrl = "https://meet.ffmuc.net/BMHL_Draft_Room_2026_Live";
-      window.open(roomUrl, "_blank");
+    // --- EMBEDDED JITSI INLINE VIDEO CALL ---
+    function initJitsiCall(displayName, startMuted) {
+      const domain = "meet.jit.si";
+      const roomName = "BMHL_Draft_Room_2026_Live_Official"; 
+      
+      const options = {
+        roomName: roomName,
+        width: "100%",
+        height: "100%",
+        parentNode: document.querySelector('#jitsi-container'),
+        userInfo: { displayName: displayName },
+        configOverwrite: {
+          startWithAudioMuted: startMuted,
+          startWithVideoMuted: startMuted,
+          prejoinPageEnabled: false,
+          disableDeepLinking: true
+        },
+        interfaceConfigOverwrite: {
+          TOOLBAR_BUTTONS: ['microphone', 'camera', 'tileview'],
+          SHOW_JITSI_WATERMARK: false
+        }
+      };
+
+      if (jitsiApi) {
+        jitsiApi.dispose();
+      }
+
+      jitsiApi = new JitsiMeetExternalAPI(domain, options);
+    }
+
+    function toggleVideo() {
+      const el = document.getElementById('jitsi-container');
+      el.style.display = (el.style.display === "none") ? "block" : "none";
+    }
+
+    // Initialize Video in Muted Mode
+    initJitsiCall("Spectator", true);
+
+    // --- MOBILE TABS NAVIGATION ---
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active-tab'));
+
+      if (tab === 'available') {
+        document.getElementById('tab-btn-avail').classList.add('active');
+        document.getElementById('panel-available').classList.add('active-tab');
+      } else if (tab === 'team1') {
+        document.getElementById('tab-btn-team1').classList.add('active');
+        document.getElementById('panel-team1').classList.add('active-tab');
+      } else if (tab === 'team2') {
+        document.getElementById('tab-btn-team2').classList.add('active');
+        document.getElementById('panel-team2').classList.add('active-tab');
+      }
     }
 
     // --- FETCH DATA (POLLING EVERY 3 SECONDS) ---
@@ -415,14 +539,14 @@
           renderDraftBoard();
         }
       } catch (err) {
-        console.error("Failed to fetch draft data", err);
+        console.error("Fetch failed", err);
       }
     }
 
     fetchDraftData();
     setInterval(fetchDraftData, 3000);
 
-    // --- RENDER UI ---
+    // --- RENDER BOARD ---
     function renderDraftBoard() {
       const cap1 = draftState.settings.cap1 || "Team 1";
       const cap2 = draftState.settings.cap2 || "Team 2";
@@ -432,23 +556,25 @@
       document.getElementById('opt-cap2').value = cap2;
       document.getElementById('opt-cap2').innerText = cap2.toUpperCase();
       
-      document.getElementById('draft-status').innerText = draftState.settings.status === "LIVE" ? "🔴 LIVE DRAFT" : "DRAFT WAITING";
+      document.getElementById('draft-status').innerText = draftState.settings.status === "LIVE" ? "🔴 LIVE DRAFT" : "PAUSED";
       
       let turnText = draftState.settings.turn ? draftState.settings.turn.toUpperCase() + "'S TURN" : "WAITING";
       if (draftState.settings.status !== "LIVE") turnText = "DRAFT PAUSED";
       
       if (isUnlocked && myIdentity !== "Commissioner") {
         if (draftState.settings.turn === myIdentity) {
-          turnText = "👉 YOUR TURN 👈";
-          document.getElementById('turn-display').style.color = "#28a745";
+          turnText = "👉 YOUR TURN";
+          document.getElementById('turn-display').style.color = "var(--accent-green)";
         } else {
-          document.getElementById('turn-display').style.color = "#ffc107";
+          document.getElementById('turn-display').style.color = "var(--accent-yellow)";
         }
       }
       
       document.getElementById('turn-display').innerText = turnText;
       document.getElementById('team1-title').innerText = cap1.toUpperCase();
       document.getElementById('team2-title').innerText = cap2.toUpperCase();
+      document.getElementById('tab-btn-team1').innerText = cap1.toUpperCase();
+      document.getElementById('tab-btn-team2').innerText = cap2.toUpperCase();
 
       const availableContainer = document.getElementById('available-players');
       const team1Container = document.getElementById('team1-roster');
@@ -472,16 +598,21 @@
       }
 
       if (isMyTurn) {
-        document.getElementById('available-panel').classList.add('interactive');
+        document.getElementById('panel-available').classList.add('interactive');
       } else {
-        document.getElementById('available-panel').classList.remove('interactive');
+        document.getElementById('panel-available').classList.remove('interactive');
       }
+
+      let countAvail = 0;
+      let countT1 = 0;
+      let countT2 = 0;
 
       sortedPlayers.forEach(p => {
         if (!p.draftedBy) {
+          countAvail++;
           let card = document.createElement('div');
           card.className = `player-card ${p.type.toLowerCase() === 'goalie' ? 'goalie' : ''}`;
-          card.innerHTML = `<span>${p.name}</span><span class="player-type">${p.type}</span>`;
+          card.innerHTML = `<span>${p.name}</span><span class="type-tag">${p.type}</span>`;
           
           if (isMyTurn) {
             card.onclick = () => openConfirmModal(p.name);
@@ -490,15 +621,22 @@
         } else {
           let rosterCard = document.createElement('div');
           rosterCard.className = 'roster-card';
-          rosterCard.innerHTML = `<span>${p.name}</span> <span class="roster-pick">#${p.pickNum}</span>`;
+          rosterCard.innerHTML = `<span>${p.name}</span> <span class="pick-number">#${p.pickNum}</span>`;
           
           if (p.draftedBy.toLowerCase() === cap1.toLowerCase()) {
+            countT1++;
             team1Container.appendChild(rosterCard);
           } else if (p.draftedBy.toLowerCase() === cap2.toLowerCase()) {
+            countT2++;
             team2Container.appendChild(rosterCard);
           }
         }
       });
+
+      document.getElementById('count-avail').innerText = countAvail;
+      document.getElementById('mobile-count-avail').innerText = countAvail;
+      document.getElementById('count-team1').innerText = countT1;
+      document.getElementById('count-team2').innerText = countT2;
     }
 
     // --- LOGIN / UNLOCK LOGIC ---
@@ -520,7 +658,9 @@
         const banner = document.getElementById('identity-banner');
         banner.style.display = 'block';
         banner.innerText = `LOGGED IN AS: ${myIdentity.toUpperCase()}`;
+        document.getElementById('user-role-display').innerText = myIdentity.toUpperCase();
 
+        initJitsiCall(myIdentity, false);
         renderDraftBoard(); 
       } else {
         alert("Incorrect PIN");
@@ -531,16 +671,11 @@
     function openConfirmModal(playerName) {
       pendingPick = playerName;
       document.getElementById('confirm-player-name').innerText = playerName.toUpperCase();
-      document.getElementById('confirm-buttons').style.display = 'block';
-      document.getElementById('pick-loader').style.display = 'none';
       document.getElementById('confirm-modal').style.display = 'flex';
     }
 
     async function submitPick() {
       if (!pendingPick) return;
-
-      document.getElementById('confirm-buttons').style.display = 'none';
-      document.getElementById('pick-loader').style.display = 'block';
 
       const payload = {
         secretToken: "BanhMiHockey2026!",
