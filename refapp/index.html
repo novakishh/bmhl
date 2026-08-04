@@ -162,13 +162,6 @@
     .white-team { background-color: #fff; color: #000; }
     .black-team { background-color: #000; color: #fff; border-top: 4px solid #333; }
 
-    /* RESPONSIVE LANDSCAPE MODE */
-    @media screen and (orientation: landscape) {
-      .scoring-area { flex-direction: row; }
-      .team-card { height: 100%; border-top: none; }
-      .black-team { border-left: 4px solid #333; border-top: none; }
-    }
-
     .score-box {
       background-color: #222;
       border: 4px solid #555;
@@ -375,6 +368,75 @@
       border: none;
       font-family: 'Anton', sans-serif;
       touch-action: manipulation;
+    }
+
+    /* --- RESPONSIVE LANDSCAPE MODE (SIDEBAR LAYOUT) --- */
+    @media screen and (orientation: landscape) {
+      /* 1. Transform the entire body into a Left Sidebar + Right Scoreboard grid */
+      body {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        grid-template-rows: 1fr auto;
+        grid-template-areas:
+          "sidebar scoring"
+          "footer  scoring";
+      }
+
+      /* 2. Move Top Bar into the Left Sidebar */
+      .top-bar {
+        grid-area: sidebar;
+        border-bottom: none;
+        border-right: 4px solid #d1122a;
+        justify-content: center;
+        padding-top: 10px;
+      }
+
+      /* 3. Move Footer under the Top Bar on the left */
+      .footer-bar {
+        grid-area: footer;
+        border-top: none;
+        border-right: 4px solid #d1122a;
+        background-color: #000;
+        flex-direction: column;
+        gap: 15px;
+        padding: 20px 10px;
+      }
+
+      /* 4. Stack the Timer Controls so they fit nicely in the sidebar */
+      .timer-controls {
+        flex-direction: column;
+        width: 75%;
+      }
+      .timer-controls button {
+        margin-left: 0 !important;
+        width: 100%;
+        margin-bottom: 8px;
+      }
+      .timer-display { font-size: 4rem; }
+      #period-display { font-size: 2rem; }
+
+      /* 5. Fill the entire Right Side with the Score zones */
+      .scoring-area {
+        grid-area: scoring;
+        flex-direction: row;
+      }
+      .team-card {
+        height: 100%;
+        border-top: none;
+      }
+      .black-team {
+        border-left: 4px solid #333;
+        border-top: none;
+      }
+
+      /* Make the score boxes massive since they now have the whole screen height */
+      .score-box {
+        width: 240px;
+        height: 200px;
+      }
+      .score {
+        font-size: 10rem;
+      }
     }
   </style>
 </head>
