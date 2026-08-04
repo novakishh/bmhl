@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>BMHL - Live Draft</title>
 
@@ -12,12 +12,6 @@
   <meta property="og:title" content="BMHL - Live Draft Board">
   <meta property="og:description" content="Watch the BMHL draft live as captains make their picks!">
   <meta property="og:image" content="https://novakishh.github.io/bmhl/bmhl-preview.png">
-
-  <!-- PWA META TAGS -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="BMHL Draft">
 
   <style>
     :root {
@@ -35,8 +29,6 @@
 
     * {
       box-sizing: border-box;
-      user-select: none;
-      -webkit-user-select: none;
     }
 
     body {
@@ -45,22 +37,22 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       margin: 0;
       padding: 0;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
     }
 
-    /* --- TOP BAR --- */
-    .top-bar {
+    /* --- TOP HEADER BAR --- */
+    .header-bar {
       background-color: #000;
       border-bottom: 2px solid var(--border-color);
       padding: 12px 16px;
-      padding-top: max(env(safe-area-inset-top), 12px);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      flex-shrink: 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
 
     .status-badge {
@@ -72,7 +64,7 @@
     }
 
     .turn-display {
-      font-size: 1.15rem;
+      font-size: 1.1rem;
       font-weight: 800;
       color: var(--accent-yellow);
       text-transform: uppercase;
@@ -85,18 +77,20 @@
       font-size: 0.8rem;
       font-weight: 700;
       text-align: center;
-      padding: 4px;
+      padding: 6px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
       display: none;
     }
 
-    /* --- MOBILE TAB BAR --- */
+    /* --- MOBILE TABS --- */
     .mobile-tabs {
       display: flex;
       background-color: #12141c;
       border-bottom: 1px solid var(--border-color);
-      flex-shrink: 0;
+      position: sticky;
+      top: 49px;
+      z-index: 90;
     }
 
     .tab-btn {
@@ -118,43 +112,37 @@
       background-color: rgba(209, 18, 42, 0.05);
     }
 
-    /* --- DRAFT BOARD LAYOUT --- */
+    /* --- DRAFT CONTENT LAYOUT --- */
     .draft-container {
-      display: flex;
-      flex-direction: column;
+      padding: 16px;
       flex-grow: 1;
-      overflow: hidden;
-      padding: 12px;
     }
 
     @media screen and (min-width: 768px) {
       .mobile-tabs { display: none; }
       .draft-container {
-        flex-direction: row;
-        gap: 12px;
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
       }
       .panel {
         display: flex !important;
         flex: 1;
       }
-      .panel.center-panel { flex: 1.5; }
+      .panel.center-panel { flex: 1.4; }
     }
 
     .panel {
       background-color: var(--bg-panel);
       border: 1px solid var(--border-color);
       border-radius: 8px;
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      overflow: hidden;
+      padding: 16px;
+      margin-bottom: 16px;
     }
 
-    /* On mobile, control panel visibility via active tab */
     @media screen and (max-width: 767px) {
       .panel { display: none; }
-      .panel.active-tab { display: flex; }
+      .panel.active-tab { display: block; }
     }
 
     .panel-title {
@@ -179,14 +167,11 @@
       border-radius: 12px;
     }
 
-    /* --- PLAYER LISTS --- */
+    /* --- PLAYER CARDS --- */
     .player-list {
       display: flex;
       flex-direction: column;
       gap: 8px;
-      overflow-y: auto;
-      flex-grow: 1;
-      padding-right: 2px;
     }
 
     .player-card {
@@ -216,12 +201,12 @@
       color: #66b0ff;
     }
 
-    /* Interactive mode when active captain clicks */
+    /* Interactive mode for logged-in captain's turn */
     .interactive .player-card {
       cursor: pointer;
-      border-color: rgba(209, 18, 42, 0.4);
+      border-color: rgba(209, 18, 42, 0.5);
     }
-    .interactive .player-card:hover {
+    .interactive .player-card:active {
       background-color: #282f3f;
       border-color: var(--accent-red);
     }
@@ -237,6 +222,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      margin-bottom: 6px;
     }
 
     .pick-number {
@@ -245,27 +231,27 @@
       font-weight: 700;
     }
 
-    /* --- FOOTER --- */
+    /* --- FOOTER CONTROL BAR --- */
     .footer-bar {
       background-color: #000;
       border-top: 1px solid var(--border-color);
-      padding: 10px 16px;
-      padding-bottom: calc(env(safe-area-inset-bottom, 10px) + 10px);
+      padding: 16px;
+      padding-bottom: max(16px, env(safe-area-inset-bottom));
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       color: var(--text-muted);
-      flex-shrink: 0;
+      margin-top: auto;
     }
 
     .btn-login {
       background-color: var(--bg-card);
       color: var(--text-main);
       border: 1px solid var(--border-color);
-      padding: 6px 14px;
-      border-radius: 4px;
-      font-size: 0.8rem;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 0.85rem;
       font-weight: 600;
       cursor: pointer;
     }
@@ -293,13 +279,13 @@
     }
 
     .modal-content h3 {
-      margin: 0 0 10px 0;
+      margin: 0 0 12px 0;
       font-size: 1.2rem;
     }
 
     .modal-input {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       font-size: 1rem;
       text-align: center;
       border-radius: 6px;
@@ -311,7 +297,7 @@
 
     .btn-modal {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       font-size: 0.95rem;
       font-weight: 700;
       border-radius: 6px;
@@ -330,8 +316,8 @@
   <!-- IDENTITY BANNER -->
   <div id="identity-banner" class="identity-banner">COMMISSIONER MODE</div>
 
-  <!-- TOP BAR -->
-  <div class="top-bar">
+  <!-- HEADER BAR -->
+  <div class="header-bar">
     <div class="status-badge" id="draft-status">CONNECTING...</div>
     <div class="turn-display" id="turn-display">LOADING</div>
   </div>
@@ -355,7 +341,7 @@
       <div class="player-list" id="team1-roster"></div>
     </div>
 
-    <!-- CENTER PANEL: AVAILABLE -->
+    <!-- CENTER PANEL: AVAILABLE PLAYERS -->
     <div class="panel active-tab" id="panel-available">
       <div class="panel-title">
         <span>AVAILABLE PLAYERS</span>
@@ -375,7 +361,7 @@
 
   </div>
 
-  <!-- FOOTER -->
+  <!-- FOOTER BAR -->
   <div class="footer-bar">
     <div id="user-role-display">SPECTATOR MODE</div>
     <button class="btn-login" id="login-btn" onclick="openLogin()">UNLOCK DRAFT</button>
@@ -418,7 +404,7 @@
     };
     let pendingPick = null;
 
-    // --- MOBILE TABS NAVIGATION ---
+    // --- MOBILE TAB SWITCHING ---
     function switchTab(tab) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.panel').forEach(p => p.classList.remove('active-tab'));
@@ -435,7 +421,7 @@
       }
     }
 
-    // --- FETCH DATA (POLLING EVERY 3 SECONDS) ---
+    // --- FETCH DATA (POLLING) ---
     async function fetchDraftData() {
       try {
         const response = await fetch(scriptURL + "?api=draft");
@@ -453,7 +439,7 @@
     fetchDraftData();
     setInterval(fetchDraftData, 3000);
 
-    // --- RENDER BOARD ---
+    // --- RENDER DRAFT BOARD ---
     function renderDraftBoard() {
       const cap1 = draftState.settings.cap1 || "Team 1";
       const cap2 = draftState.settings.cap2 || "Team 2";
@@ -573,7 +559,7 @@
       }
     }
 
-    // --- DRAFT LOGIC ---
+    // --- DRAFT SELECTION LOGIC ---
     function openConfirmModal(playerName) {
       pendingPick = playerName;
       document.getElementById('confirm-player-name').innerText = playerName.toUpperCase();
