@@ -36,6 +36,81 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* --- SPLASH SCREEN INTRO ANIMATION --- */
+    #splash-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: #000000;
+      z-index: 9999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      pointer-events: none;
+      animation: splashContainerFade 0.5s ease-out 2.2s forwards;
+    }
+
+    .splash-logo {
+      font-size: clamp(3.5rem, 12vw, 7rem);
+      font-weight: 900;
+      letter-spacing: 6px;
+      color: #ffffff;
+      text-transform: uppercase;
+      font-style: italic;
+      opacity: 0;
+      transform: scale(0.85);
+      animation: monogramZoomCutout 1.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+      text-shadow: 0 0 20px rgba(209, 18, 42, 0.6);
+    }
+
+    @keyframes monogramZoomCutout {
+      0% {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+      35% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      65% {
+        opacity: 1;
+        transform: scale(1.05);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(12); /* Cutout zoom-in effect */
+      }
+    }
+
+    @keyframes splashContainerFade {
+      0% {
+        opacity: 1;
+        visibility: visible;
+      }
+      100% {
+        opacity: 0;
+        visibility: hidden;
+      }
+    }
+
+    /* --- PAGE CONTENT FADE IN --- */
+    .app-wrapper {
+      opacity: 0;
+      animation: appContentFadeIn 0.8s ease-out 2.0s forwards;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      width: 100%;
+    }
+
+    @keyframes appContentFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     /* --- TOP HEADER BAR --- */
@@ -88,6 +163,7 @@
     @media screen and (min-width: 768px), screen and (orientation: landscape) and (min-width: 568px) {
       .mobile-tabs { display: none; }
       body { height: 100vh; overflow: hidden; }
+      .app-wrapper { height: 100vh; overflow: hidden; }
       .main-wrapper { flex: 1; overflow: hidden; height: auto; }
       .draft-container { flex-direction: row; gap: 16px; height: 100%; }
       .panel { display: flex !important; flex: 1; height: 100%; margin-bottom: 0 !important; }
@@ -99,18 +175,19 @@
     .panel-title { font-size: 0.95rem; font-weight: 700; color: #ffffff; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
     .count-badge { background-color: var(--accent-red); color: #ffffff; font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; font-weight: 700; }
 
-    /* --- PRE-DRAFT LOBBY OVERLAY --- */
+    /* --- PRE-DRAFT LOBBY OVERLAY (TOP ALIGNED) --- */
     .lobby-overlay {
       position: absolute; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(10, 10, 10, 0.98); z-index: 50;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 20px; text-align: center; padding: 20px;
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+      gap: 16px; text-align: center; padding: 30px 20px;
+      overflow-y: auto;
     }
-    .lobby-title { font-size: 1.8rem; font-weight: 800; color: #ffffff; margin-bottom: 10px; }
+    .lobby-title { font-size: 1.8rem; font-weight: 800; color: #ffffff; margin-bottom: 5px; }
     .ready-status-box { background: var(--bg-card); border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; width: 100%; max-width: 350px; font-size: 1.1rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
     .ready-status-box.is-ready { border-color: var(--accent-green); background-color: rgba(40, 167, 69, 0.1); }
     .status-icon { font-size: 1.5rem; }
-    .btn-ready-up { background-color: var(--accent-red); color: #ffffff; font-size: 1.2rem; font-weight: 800; padding: 15px 30px; border: none; border-radius: 8px; margin-top: 20px; cursor: pointer; width: 100%; max-width: 350px; text-transform: uppercase; display: none; }
+    .btn-ready-up { background-color: var(--accent-red); color: #ffffff; font-size: 1.2rem; font-weight: 800; padding: 15px 30px; border: none; border-radius: 8px; margin-top: 10px; cursor: pointer; width: 100%; max-width: 350px; text-transform: uppercase; display: none; }
     .btn-ready-up:active { transform: scale(0.98); }
 
     /* --- PLAYER LISTS --- */
@@ -137,63 +214,73 @@
 </head>
 <body>
 
-  <!-- HEADER BAR -->
-  <div class="header-wrapper">
-    <div class="header-bar">
-      <div class="header-row">
-        <div class="status-badge" id="draft-status">CONNECTING...</div>
-        <div class="turn-display" id="turn-display">LOADING</div>
-      </div>
-      <div class="header-row header-controls">
-        <div class="role-badge" id="user-role-display">SPECTATOR MODE</div>
-        <button class="btn-login" id="login-btn" onclick="openLogin()">UNLOCK DRAFT</button>
-      </div>
-    </div>
+  <!-- SPLASH SCREEN INTRO ANIMATION -->
+  <div id="splash-screen">
+    <div class="splash-logo">BMHL</div>
   </div>
 
-  <!-- MOBILE TABS -->
-  <div class="mobile-tabs">
-    <button class="tab-btn active" id="tab-btn-avail" onclick="switchTab('available')">AVAILABLE (<span id="mobile-count-avail">0</span>)</button>
-    <button class="tab-btn" id="tab-btn-team1" onclick="switchTab('team1')">TEAM 1</button>
-    <button class="tab-btn" id="tab-btn-team2" onclick="switchTab('team2')">TEAM 2</button>
-  </div>
-
-  <!-- MAIN WRAPPER -->
-  <div class="main-wrapper">
+  <!-- APP CONTENT WRAPPER -->
+  <div class="app-wrapper">
     
-    <!-- PRE-DRAFT LOBBY OVERLAY -->
-    <div id="lobby-overlay" class="lobby-overlay" style="display: none;">
-      <div class="lobby-title">PRE-DRAFT LOBBY</div>
-      <p style="color: var(--text-muted); margin-bottom: 20px;">Waiting for captains to ready up...</p>
-      
-      <div class="ready-status-box" id="lobby-box-c1">
-        <span id="lobby-name-c1">CAPTAIN 1</span>
-        <span class="status-icon" id="lobby-icon-c1">⏳</span>
-      </div>
-      
-      <div class="ready-status-box" id="lobby-box-c2">
-        <span id="lobby-name-c2">CAPTAIN 2</span>
-        <span class="status-icon" id="lobby-icon-c2">⏳</span>
-      </div>
-
-      <button class="btn-ready-up" id="btn-ready-up" onclick="sendReadyUp()">I AM READY</button>
-    </div>
-
-    <!-- DRAFT BOARD -->
-    <div class="draft-container">
-      <div class="panel" id="panel-team1">
-        <div class="panel-title"><span id="team1-title">TEAM 1</span><span class="count-badge" id="count-team1">0</span></div>
-        <div class="player-list" id="team1-roster"></div>
-      </div>
-      <div class="panel center-panel active-tab" id="panel-available">
-        <div class="panel-title"><span>AVAILABLE PLAYERS</span><span class="count-badge" id="count-avail">0</span></div>
-        <div class="player-list" id="available-players"></div>
-      </div>
-      <div class="panel" id="panel-team2">
-        <div class="panel-title"><span id="team2-title">TEAM 2</span><span class="count-badge" id="count-team2">0</span></div>
-        <div class="player-list" id="team2-roster"></div>
+    <!-- HEADER BAR -->
+    <div class="header-wrapper">
+      <div class="header-bar">
+        <div class="header-row">
+          <div class="status-badge" id="draft-status">CONNECTING...</div>
+          <div class="turn-display" id="turn-display">LOADING</div>
+        </div>
+        <div class="header-row header-controls">
+          <div class="role-badge" id="user-role-display">SPECTATOR MODE</div>
+          <button class="btn-login" id="login-btn" onclick="openLogin()">UNLOCK DRAFT</button>
+        </div>
       </div>
     </div>
+
+    <!-- MOBILE TABS -->
+    <div class="mobile-tabs">
+      <button class="tab-btn active" id="tab-btn-avail" onclick="switchTab('available')">AVAILABLE (<span id="mobile-count-avail">0</span>)</button>
+      <button class="tab-btn" id="tab-btn-team1" onclick="switchTab('team1')">TEAM 1</button>
+      <button class="tab-btn" id="tab-btn-team2" onclick="switchTab('team2')">TEAM 2</button>
+    </div>
+
+    <!-- MAIN WRAPPER -->
+    <div class="main-wrapper">
+      
+      <!-- PRE-DRAFT LOBBY OVERLAY -->
+      <div id="lobby-overlay" class="lobby-overlay" style="display: none;">
+        <div class="lobby-title">PRE-DRAFT LOBBY</div>
+        <p style="color: var(--text-muted); margin-bottom: 10px;">Waiting for captains to ready up...</p>
+        
+        <div class="ready-status-box" id="lobby-box-c1">
+          <span id="lobby-name-c1">CAPTAIN 1</span>
+          <span class="status-icon" id="lobby-icon-c1">⏳</span>
+        </div>
+        
+        <div class="ready-status-box" id="lobby-box-c2">
+          <span id="lobby-name-c2">CAPTAIN 2</span>
+          <span class="status-icon" id="lobby-icon-c2">⏳</span>
+        </div>
+
+        <button class="btn-ready-up" id="btn-ready-up" onclick="sendReadyUp()">I AM READY</button>
+      </div>
+
+      <!-- DRAFT BOARD -->
+      <div class="draft-container">
+        <div class="panel" id="panel-team1">
+          <div class="panel-title"><span id="team1-title">TEAM 1</span><span class="count-badge" id="count-team1">0</span></div>
+          <div class="player-list" id="team1-roster"></div>
+        </div>
+        <div class="panel center-panel active-tab" id="panel-available">
+          <div class="panel-title"><span>AVAILABLE PLAYERS</span><span class="count-badge" id="count-avail">0</span></div>
+          <div class="player-list" id="available-players"></div>
+        </div>
+        <div class="panel" id="panel-team2">
+          <div class="panel-title"><span id="team2-title">TEAM 2</span><span class="count-badge" id="count-team2">0</span></div>
+          <div class="player-list" id="team2-roster"></div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- LOGIN MODAL -->
@@ -231,6 +318,12 @@
     let myIdentity = "Spectator";
     let pendingPick = null;
     let draftState = { players: [], settings: { cap1: "Team 1", cap2: "Team 2", turn: "", status: "WAITING", cap1Ready: false, cap2Ready: false } };
+
+    // --- REMOVE SPLASH FROM DOM AFTER ANIMATION ---
+    setTimeout(() => {
+      const splash = document.getElementById('splash-screen');
+      if (splash) splash.style.display = 'none';
+    }, 2800);
 
     function switchTab(tab) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
