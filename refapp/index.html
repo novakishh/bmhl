@@ -372,50 +372,63 @@
 
     /* --- RESPONSIVE LANDSCAPE MODE (SIDEBAR LAYOUT) --- */
     @media screen and (orientation: landscape) {
-      /* 1. Transform the entire body into a Left Sidebar + Right Scoreboard grid */
       body {
         display: grid;
-        grid-template-columns: 280px 1fr;
+        grid-template-columns: 260px 1fr; /* Slightly thinner sidebar */
         grid-template-rows: 1fr auto;
         grid-template-areas:
           "sidebar scoring"
           "footer  scoring";
       }
 
-      /* 2. Move Top Bar into the Left Sidebar */
+      /* 1. Top Bar / Main Sidebar Area */
       .top-bar {
         grid-area: sidebar;
         border-bottom: none;
         border-right: 4px solid #d1122a;
         justify-content: center;
-        padding-top: 10px;
+        padding: 5px 10px;
+        padding-top: max(env(safe-area-inset-top), 10px);
       }
 
-      /* 3. Move Footer under the Top Bar on the left */
+      /* 2. Footer Area (Protected from iOS Home Bar) */
       .footer-bar {
         grid-area: footer;
         border-top: none;
         border-right: 4px solid #d1122a;
         background-color: #000;
         flex-direction: column;
-        gap: 15px;
-        padding: 20px 10px;
+        justify-content: center;
+        gap: 8px; /* Tighter gap */
+        padding: 10px;
+        /* CRITICAL: Pushes the yellow button up above the iPhone home bar */
+        padding-bottom: max(env(safe-area-inset-bottom, 15px), 15px); 
       }
 
-      /* 4. Stack the Timer Controls so they fit nicely in the sidebar */
+      /* 3. Tighter sizing for fonts and buttons to fit short screen heights */
+      #period-display { font-size: 1.5rem; }
+      .period-controls { margin-bottom: 2px; }
+      .btn-small { padding: 4px 12px; font-size: 1rem; }
+      
+      .timer-display { font-size: 3.5rem; line-height: 1; }
+      .timer-wrapper { margin: 5px 0; }
+      
       .timer-controls {
         flex-direction: column;
-        width: 75%;
+        width: 80%;
+        gap: 6px;
       }
       .timer-controls button {
         margin-left: 0 !important;
         width: 100%;
-        margin-bottom: 8px;
+        margin-bottom: 0;
+        padding: 8px 10px;
+        font-size: 1.1rem;
       }
-      .timer-display { font-size: 4rem; }
-      #period-display { font-size: 2rem; }
 
-      /* 5. Fill the entire Right Side with the Score zones */
+      .mode-toggle { font-size: 1rem; padding: 6px 12px; }
+
+      /* 4. Scoreboard Zones */
       .scoring-area {
         grid-area: scoring;
         flex-direction: row;
@@ -429,13 +442,12 @@
         border-top: none;
       }
 
-      /* Make the score boxes massive since they now have the whole screen height */
       .score-box {
-        width: 240px;
-        height: 200px;
+        width: 220px;
+        height: 180px;
       }
       .score {
-        font-size: 10rem;
+        font-size: 9rem;
       }
     }
   </style>
